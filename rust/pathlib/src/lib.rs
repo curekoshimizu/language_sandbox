@@ -12,7 +12,7 @@ mod tests {
     fn temp_dir_test() -> Result<(), Error> {
         let path;
         {
-            let tmp = thread::spawn(|| TempDir::new()).join().unwrap()?;
+            let tmp = TempDir::new()?;
             path = tmp.path().to_path_buf();
             assert!(path.exists());
         }
@@ -30,7 +30,7 @@ mod tests {
 
         let path;
         {
-            let tmp = thread::spawn(|| TempDir::new()).join().unwrap()?;
+            let tmp = TempDir::new()?;
             path = tmp.into_path();
             assert!(path.exists());
         }
