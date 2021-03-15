@@ -1,11 +1,9 @@
 #[cfg(test)]
 mod tests {
-
     use std::fs;
     use std::fs::File;
     use std::io::{BufRead, BufReader, Error, Write};
     use std::path::PathBuf;
-    use std::thread;
     use tempfile::TempDir;
 
     #[test]
