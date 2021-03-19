@@ -16,9 +16,12 @@ async fn sleep_msec(sleep_time: u64) -> u64 {
     sleep_time
 }
 
+// TODO:
 // asyncio.Lock --> Mutex?
 // asyncio.generator --> tokio_streams?
 // rx, channel
+// web server
+// test code
 
 fn main() -> Result<(), io::Error> {
     // like. asyncio.run(coro()) in python
