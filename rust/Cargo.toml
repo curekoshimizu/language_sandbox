@@ -3,4 +3,5 @@
 members = [
     "sleep",
     "pathlib",
+    "async_await",
 ]
