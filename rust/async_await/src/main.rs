@@ -17,16 +17,56 @@ async fn sleep_msec(sleep_time: u64) -> u64 {
 }
 
 // asyncio.Lock --> Mutex?
-// asyncio.create_task
-// run_in_executor
+// asyncio.generator --> tokio_streams?
+// rx, channel
 
 fn main() -> Result<(), io::Error> {
     // like. asyncio.run(coro()) in python
     tokio::runtime::Runtime::new()?.block_on(async_func());
 
-    async_main_macro();
+    let ret = async_main_macro();
+    println!("result : {}", ret);
 
     Ok(())
+}
+
+async fn gather_example() {
+    // like. asyncio.gather(coro1(), coro2()) in python
+    let start = Instant::now();
+    let ret = tokio::join!(sleep_msec(1000), sleep_msec(500), sleep_msec(700),);
+    let elapsed_time = start.elapsed().as_millis();
+    println!(">>> {:?}. elapsed_time {:?} [msec]", ret, &elapsed_time);
+}
+
+async fn create_task_example() {
+    // like. create_task
+    let start = Instant::now();
+
+    let task = tokio::spawn(sleep_msec(100));
+    sleep_msec(200).await;
+
+    let ret = task.await.unwrap();
+    println!(
+        "{:?}. elapsed time = {} [msec] ",
+        ret,
+        start.elapsed().as_millis()
+    );
+}
+
+async fn run_in_executor_example() {
+    let start = Instant::now();
+    let blocking_task = tokio::task::spawn_blocking(|| {
+        use std::thread;
+        use std::time::Duration;
+
+        thread::sleep(Duration::from_millis(100));
+    });
+
+    blocking_task.await.unwrap();
+    println!(
+        "run_in_executor. elapsed time = {} [msec] ",
+        start.elapsed().as_millis()
+    );
 }
 
 async fn async_func() {
@@ -37,20 +77,14 @@ async fn async_func() {
     let res = tokio::time::timeout(time::Duration::from_millis(200), sleep_msec(1000)).await;
     assert!(res.is_err());
 
-    // like. asyncio.gather(coro1(), coro2()) in python
-    let start = Instant::now();
-    let ret = tokio::join!(sleep_msec(1000), sleep_msec(500), sleep_msec(700),);
-    let elapsed_time = start.elapsed().as_millis();
-    println!(">>> {:?}. elapsed_time {:?} [msec]", ret, &elapsed_time);
-
-    let world = async {
-        println!("hello, async block");
-    };
-    println!("hoge");
-    world.await;
+    gather_example().await;
+    create_task_example().await;
+    run_in_executor_example().await;
 }
 
 #[tokio::main]
-async fn async_main_macro() {
+async fn async_main_macro() -> u32 {
     sleep_msec(1000).await;
+
+    1
 }
