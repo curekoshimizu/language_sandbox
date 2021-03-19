@@ -21,7 +21,6 @@ async fn sleep_msec(sleep_time: u64) -> u64 {
 // asyncio.generator --> tokio_streams?
 // rx, channel
 // web server
-// test code
 
 fn main() -> Result<(), io::Error> {
     // like. asyncio.run(coro()) in python
@@ -90,4 +89,14 @@ async fn async_main_macro() -> u32 {
     sleep_msec(1000).await;
 
     1
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[tokio::test]
+    async fn async_test() {
+        assert_eq!(sleep_msec(100).await, 100);
+    }
 }
