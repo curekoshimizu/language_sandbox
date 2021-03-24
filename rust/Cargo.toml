@@ -5,4 +5,5 @@ members = [
     "pathlib",
     "async_await",
     "file_io",
+    "context_manager",
 ]
