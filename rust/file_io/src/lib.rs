@@ -1,5 +1,6 @@
 use std::fs;
 use std::fs::File;
+use std::io::BufRead;
 use std::io::BufReader;
 use std::io::BufWriter;
 use std::io::Error;
@@ -83,7 +84,7 @@ pub fn read_all_strings(loop_cnt: i32, path: &PathBuf) -> Result<(), Error> {
         let mut f = File::open(path)?;
         let mut buf = String::new();
         f.read_to_string(&mut buf)?;
-        assert_eq!(buf.len(), 13000000);
+        assert_eq!(buf.len(), 1300000);
     }
 
     Ok(())
@@ -95,7 +96,7 @@ pub fn buffered_read_all_strings(loop_cnt: i32, path: &PathBuf) -> Result<(), Er
         let mut f = BufReader::new(File::open(path)?);
         let mut buf = String::new();
         f.read_to_string(&mut buf)?;
-        assert_eq!(buf.len(), 13000000);
+        assert_eq!(buf.len(), 1300000);
     }
 
     Ok(())
@@ -105,7 +106,16 @@ pub fn buffered_read_all_strings(loop_cnt: i32, path: &PathBuf) -> Result<(), Er
 pub fn fs_read_all_strings(loop_cnt: i32, path: &PathBuf) -> Result<(), Error> {
     for _ in 0..loop_cnt {
         let buf = fs::read_to_string(path)?;
-        assert_eq!(buf.len(), 13000000);
+        assert_eq!(buf.len(), 1300000);
+    }
+
+    Ok(())
+}
+
+pub fn read_lines(loop_cnt: i32, path: &PathBuf) -> Result<(), Error> {
+    for _ in 0..loop_cnt {
+        let f = BufReader::new(File::open(path)?);
+        assert_eq!(f.lines().count(), 100000);
     }
 
     Ok(())
@@ -249,24 +259,29 @@ mod tests {
             ); // best!
         }
 
+        let str_data = "party parrot\n".to_string();
+        let read_file_string = temp_dir.join("string");
+        buffered_write_string(100000, &&read_file_string, &str_data)?;
         {
             println!("[read all as string]");
-            let str_data = "party parrot\n".to_string();
-            let read_file_string = temp_dir.join("string");
-            buffered_write_string(1000000, &&read_file_string, &str_data)?;
 
             measure!(
                 "read all as string",
-                read_all_strings(100, &read_file_string)?
+                read_all_strings(1000, &read_file_string)?
             );
             measure!(
                 "buffered read all as string",
-                buffered_read_all_strings(100, &read_file_string)?
+                buffered_read_all_strings(1000, &read_file_string)?
             );
             measure!(
                 "fs read all as string",
-                fs_read_all_strings(100, &read_file_string)?
+                fs_read_all_strings(1000, &read_file_string)?
             ); // best!
+        }
+
+        {
+            println!("[read lines]");
+            measure!("read lines", read_lines(10, &read_file_string)?);
         }
 
         Ok(())
