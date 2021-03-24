@@ -1,9 +1,13 @@
+use std::fs;
 use std::fs::File;
+use std::io::BufReader;
 use std::io::BufWriter;
 use std::io::Error;
+use std::io::Read;
 use std::io::Write;
 use std::path::PathBuf;
 
+// bad
 pub fn write_bytes(loop_cnt: i32, path: &PathBuf, data: &Vec<u8>) -> Result<(), Error> {
     let mut f = File::create(path)?;
     for _ in 0..loop_cnt {
@@ -12,6 +16,7 @@ pub fn write_bytes(loop_cnt: i32, path: &PathBuf, data: &Vec<u8>) -> Result<(), 
     Ok(())
 }
 
+// good!
 pub fn buffered_write_bytes(loop_cnt: i32, path: &PathBuf, data: &Vec<u8>) -> Result<(), Error> {
     let mut f = BufWriter::new(File::create(path)?);
     for _ in 0..loop_cnt {
@@ -20,6 +25,7 @@ pub fn buffered_write_bytes(loop_cnt: i32, path: &PathBuf, data: &Vec<u8>) -> Re
     Ok(())
 }
 
+// bad
 pub fn write_string(loop_cnt: i32, path: &PathBuf, data: &String) -> Result<(), Error> {
     let mut f = File::create(path)?;
     for _ in 0..loop_cnt {
@@ -28,12 +34,80 @@ pub fn write_string(loop_cnt: i32, path: &PathBuf, data: &String) -> Result<(), 
     Ok(())
 }
 
+// good!
 pub fn buffered_write_string(loop_cnt: i32, path: &PathBuf, data: &String) -> Result<(), Error> {
-    let f = File::create(path)?;
-    let mut f = BufWriter::new(f);
+    let mut f = BufWriter::new(File::create(path)?);
     for _ in 0..loop_cnt {
         write!(f, "{}", data)?;
     }
+    Ok(())
+}
+
+// not simple
+pub fn read_all_bytes(loop_cnt: i32, path: &PathBuf) -> Result<(), Error> {
+    for _ in 0..loop_cnt {
+        let mut f = File::open(path)?;
+        let mut buf = Vec::new();
+        f.read_to_end(&mut buf)?;
+        assert_eq!(buf.len(), 100000000);
+    }
+
+    Ok(())
+}
+
+// not simple
+pub fn buffered_read_all_bytes(loop_cnt: i32, path: &PathBuf) -> Result<(), Error> {
+    for _ in 0..loop_cnt {
+        let mut f = BufReader::new(File::open(path)?);
+        let mut buf = Vec::new();
+        f.read_to_end(&mut buf)?;
+        assert_eq!(buf.len(), 100000000);
+    }
+
+    Ok(())
+}
+
+// not simple
+pub fn fs_read_all_bytes(loop_cnt: i32, path: &PathBuf) -> Result<(), Error> {
+    for _ in 0..loop_cnt {
+        let buf = fs::read(&path)?;
+        assert_eq!(buf.len(), 100000000);
+    }
+
+    Ok(())
+}
+
+// not simple
+pub fn read_all_strings(loop_cnt: i32, path: &PathBuf) -> Result<(), Error> {
+    for _ in 0..loop_cnt {
+        let mut f = File::open(path)?;
+        let mut buf = String::new();
+        f.read_to_string(&mut buf)?;
+        assert_eq!(buf.len(), 13000000);
+    }
+
+    Ok(())
+}
+
+// not simple
+pub fn buffered_read_all_strings(loop_cnt: i32, path: &PathBuf) -> Result<(), Error> {
+    for _ in 0..loop_cnt {
+        let mut f = BufReader::new(File::open(path)?);
+        let mut buf = String::new();
+        f.read_to_string(&mut buf)?;
+        assert_eq!(buf.len(), 13000000);
+    }
+
+    Ok(())
+}
+
+// simple!!
+pub fn fs_read_all_strings(loop_cnt: i32, path: &PathBuf) -> Result<(), Error> {
+    for _ in 0..loop_cnt {
+        let buf = fs::read_to_string(path)?;
+        assert_eq!(buf.len(), 13000000);
+    }
+
     Ok(())
 }
 
@@ -79,7 +153,7 @@ mod tests {
                     &temp_dir.join("small_buffered_write_bytes.txt"),
                     &bytes_data,
                 )?;
-            });
+            }); // best!
         }
 
         {
@@ -95,7 +169,7 @@ mod tests {
                     &temp_dir.join("big_buffered_write_bytes.txt"),
                     &bytes_data,
                 )?;
-            });
+            }); // best!
         }
 
         {
@@ -115,7 +189,7 @@ mod tests {
                     &temp_dir.join("small_buffered_write_string.txt"),
                     &str_data,
                 )?;
-            });
+            }); // best!
         }
 
         {
@@ -131,7 +205,68 @@ mod tests {
                     &temp_dir.join("big_buffered_write_string.txt"),
                     &str_data,
                 )?;
+            }); // best!
+        }
+
+        {
+            println!("[big data]");
+            let loop_cnt = 10;
+            let str_data = "a".repeat(10_000_000);
+            measure!("write string", {
+                write_string(loop_cnt, &temp_dir.join("big_write_string.txt"), &str_data)?;
             });
+            measure!("buffered write string", {
+                buffered_write_string(
+                    loop_cnt,
+                    &temp_dir.join("big_buffered_write_string.txt"),
+                    &str_data,
+                )?;
+            }); // best!
+        }
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_read_file() -> Result<(), Error> {
+        let tmp = TempDir::new()?;
+        let temp_dir = tmp.path().to_path_buf();
+
+        {
+            println!("[read all as bytes]");
+            let bytes_data: Vec<u8> = vec![0xB; 100_000_000]; // all B array
+            let read_file_bytes = temp_dir.join("data");
+            buffered_write_bytes(1, &read_file_bytes, &bytes_data)?;
+
+            measure!("read all as bytes", read_all_bytes(10, &read_file_bytes)?);
+            measure!(
+                "buffered read all as bytes",
+                buffered_read_all_bytes(10, &read_file_bytes)?
+            );
+            measure!(
+                "fs read all as bytes",
+                fs_read_all_bytes(10, &read_file_bytes)?
+            ); // best!
+        }
+
+        {
+            println!("[read all as string]");
+            let str_data = "party parrot\n".to_string();
+            let read_file_string = temp_dir.join("string");
+            buffered_write_string(1000000, &&read_file_string, &str_data)?;
+
+            measure!(
+                "read all as string",
+                read_all_strings(100, &read_file_string)?
+            );
+            measure!(
+                "buffered read all as string",
+                buffered_read_all_strings(100, &read_file_string)?
+            );
+            measure!(
+                "fs read all as string",
+                fs_read_all_strings(100, &read_file_string)?
+            ); // best!
         }
 
         Ok(())
