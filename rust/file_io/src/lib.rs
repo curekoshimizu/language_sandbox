@@ -157,7 +157,7 @@ mod tests {
                     &bytes_data,
                 )?;
             });
-            measure!("buffered write byte", {
+            measure!("buffered write byte★", {
                 buffered_write_bytes(
                     loop_cnt,
                     &temp_dir.join("small_buffered_write_bytes.txt"),
@@ -173,7 +173,7 @@ mod tests {
             measure!("write byte", {
                 write_bytes(loop_cnt, &temp_dir.join("big_write_bytes.txt"), &bytes_data)?;
             });
-            measure!("buffered write byte", {
+            measure!("buffered write byte★", {
                 buffered_write_bytes(
                     loop_cnt,
                     &temp_dir.join("big_buffered_write_bytes.txt"),
@@ -193,7 +193,7 @@ mod tests {
                     &str_data,
                 )?;
             });
-            measure!("buffered write string", {
+            measure!("buffered write string★", {
                 buffered_write_string(
                     loop_cnt,
                     &temp_dir.join("small_buffered_write_string.txt"),
@@ -209,7 +209,7 @@ mod tests {
             measure!("write string", {
                 write_string(loop_cnt, &temp_dir.join("big_write_string.txt"), &str_data)?;
             });
-            measure!("buffered write string", {
+            measure!("buffered write string★", {
                 buffered_write_string(
                     loop_cnt,
                     &temp_dir.join("big_buffered_write_string.txt"),
@@ -225,7 +225,7 @@ mod tests {
             measure!("write string", {
                 write_string(loop_cnt, &temp_dir.join("big_write_string.txt"), &str_data)?;
             });
-            measure!("buffered write string", {
+            measure!("buffered write string★", {
                 buffered_write_string(
                     loop_cnt,
                     &temp_dir.join("big_buffered_write_string.txt"),
@@ -254,7 +254,7 @@ mod tests {
                 buffered_read_all_bytes(10, &read_file_bytes)?
             );
             measure!(
-                "fs read all as bytes",
+                "fs read all as bytes★",
                 fs_read_all_bytes(10, &read_file_bytes)?
             ); // best!
         }
@@ -274,14 +274,14 @@ mod tests {
                 buffered_read_all_strings(1000, &read_file_string)?
             );
             measure!(
-                "fs read all as string",
+                "fs read all as string★",
                 fs_read_all_strings(1000, &read_file_string)?
             ); // best!
         }
 
         {
             println!("[read lines]");
-            measure!("read lines", read_lines(10, &read_file_string)?);
+            measure!("read lines★", read_lines(10, &read_file_string)?);
         }
 
         Ok(())
