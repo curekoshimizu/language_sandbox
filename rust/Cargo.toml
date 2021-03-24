@@ -4,4 +4,5 @@ members = [
     "sleep",
     "pathlib",
     "async_await",
+    "file_io",
 ]
