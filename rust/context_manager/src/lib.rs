@@ -21,8 +21,6 @@ impl Drop for Timer {
     }
 }
 
-//impl Drop for Timer {}
-
 #[cfg(test)]
 mod tests {
     use super::*;
