@@ -1,10 +1,15 @@
 #[cfg(test)]
 mod tests {
+    use std::sync::atomic::{AtomicUsize, Ordering};
     use std::sync::mpsc;
     use std::sync::Arc;
     use std::sync::Mutex;
+    use std::sync::RwLock;
     use std::thread;
     use std::time::Duration;
+    use std::time::Instant;
+
+    const NUM_THREADS: usize = 20000;
 
     #[test]
     fn simple_thread_test() {
@@ -113,30 +118,142 @@ mod tests {
 
     #[test]
     fn mutex_thread() {
-        // NOTE: Arc
-        //  Atomic Reference Counter.
-        //  Rc does not implement "Send" and "Sync"
-        let counter = Arc::new(Mutex::new(0));
-        let mut handles = vec![];
+        // Rc/(RefCell or Cell) <--> Arc/Mutex
 
-        for _ in 0..10 {
-            // NOTE:
-            //  These codes are same. But Arc::clone is better because x.clone() makes us think
-            //  depp copy which makes programs slow.
-            // let counter = counter.clone();
-            let counter = Arc::clone(&counter);
-            let handle = thread::spawn(move || {
-                let mut num = counter.lock().unwrap();
-
-                *num += 1;
-            });
-            handles.push(handle);
+        {
+            // RefCell Example.
+            use std::cell::RefCell;
+            let counter = RefCell::new(0);
+            {
+                let mut a = counter.borrow_mut();
+                *a += 1;
+                // counter.borrow_mut(); // already borrowed: BorrowMutError occurs!!!!
+                // In that case, we need Reference Counter.
+            }
+            assert_eq!(*counter.borrow(), 1);
+        }
+        {
+            // Use Cell instead of RefCell.
+            // Cell<T> requires T to implement "Copy".
+            // The method get returns a copy of the contained value,
+            // and set stores a copy of the argument val as the new value.
+            // Meanwhile, it won't throw runtime error in comparison with RefCell.
+            use std::cell::Cell;
+            let counter = Cell::new(0);
+            {
+                let mut a = counter.get();
+                a += 1;
+                counter.set(a);
+                let mut b = counter.get();
+                b += 1;
+                counter.set(b);
+            }
+            assert_eq!(counter.get(), 2);
         }
 
-        for handle in handles {
-            handle.join().unwrap();
-        }
+        {
+            // Use Rc and RefCell
+            use std::cell::RefCell;
+            use std::rc::Rc;
+            let counter = Rc::new(RefCell::new(0));
 
-        assert_eq!(*counter.lock().unwrap(), 10);
+            let mut f_vec = vec![];
+
+            for _ in 0..10 {
+                let counter = Rc::clone(&counter);
+                let f = move || {
+                    let mut num = counter.borrow_mut();
+
+                    *num += 1;
+                };
+                f_vec.push(f);
+            }
+            assert_eq!(Rc::strong_count(&counter), 11);
+
+            for f in f_vec {
+                f();
+            }
+
+            assert_eq!(*counter.borrow(), 10);
+        }
+        {
+            // Use Arc and Mutex
+            // NOTE: Arc
+            //  Atomic Reference Counter.
+            //  Rc does not implement "Send" and "Sync"
+            let start = Instant::now();
+            let counter = Arc::new(Mutex::new(0));
+            let mut handles = vec![];
+
+            for _ in 0..NUM_THREADS {
+                // NOTE:
+                //  These codes are same. But Arc::clone is better because x.clone() makes us think
+                //  depp copy which makes programs slow.
+                // let counter = counter.clone();
+                let counter = Arc::clone(&counter);
+                let handle = thread::spawn(move || {
+                    let mut num = counter.lock().unwrap();
+
+                    *num += 1;
+                });
+                handles.push(handle);
+            }
+
+            for handle in handles {
+                handle.join().unwrap();
+            }
+
+            assert_eq!(*counter.lock().unwrap(), NUM_THREADS);
+            println!("Arc+Mutex : {} msec", start.elapsed().as_millis())
+        }
+        {
+            let start = Instant::now();
+
+            // Use Arc and RwLock
+            let counter = Arc::new(RwLock::new(0));
+            let mut handles = vec![];
+
+            for _ in 0..NUM_THREADS {
+                let counter = Arc::clone(&counter);
+                let handle = thread::spawn(move || {
+                    let mut num = counter.write().unwrap();
+
+                    *num += 1;
+                });
+                handles.push(handle);
+            }
+
+            for handle in handles {
+                handle.join().unwrap();
+            }
+
+            assert_eq!(*counter.read().unwrap(), NUM_THREADS);
+            println!("Arc+RwLock : {} msec", start.elapsed().as_millis())
+        }
+        {
+            // Use Atomic
+            let start = Instant::now();
+            let counter = Arc::new(AtomicUsize::new(0));
+            let mut handles = vec![];
+
+            for _ in 0..NUM_THREADS {
+                let counter = Arc::clone(&counter);
+                let handle = thread::spawn(move || {
+                    // NOTE: what is Ordering?
+                    // ref.
+                    //  * https://blog.tiqwab.com/2020/05/13/memory-consistency.html
+                    //  * C++ pocket reference
+                    counter.fetch_add(1, Ordering::SeqCst);
+                });
+                handles.push(handle);
+            }
+
+            for handle in handles {
+                handle.join().unwrap();
+            }
+
+            assert_eq!(counter.load(Ordering::SeqCst), NUM_THREADS);
+            println!("Arc+AtomicUsize : {} msec", start.elapsed().as_millis())
+        }
     }
 }
