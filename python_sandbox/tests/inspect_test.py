@@ -28,13 +28,13 @@ def wrap_class_method(cls: Any) -> None:
         def wrapper(*args: Any, **kwargs: Any) -> Any:
             stime = time.time()
             ret = f(*args, **kwargs)
-            print(f"{class_name}.{f.__name__} : elapsed time = {(time.time() - stime):.3f} sec")
+            elapsed_time = time.time() - stime
+            print(f"{class_name}.{f.__name__} : elapsed time = {elapsed_time:.3f} sec")
             return ret
 
         return wrapper
 
     for name, method in inspect.getmembers(cls, predicate=inspect.isfunction):
-        print(name)
         setattr(cls, name, decorate_func(cls.__name__, method))
 
 
@@ -48,3 +48,12 @@ def test_class_method_hook() -> None:
 
     print(b.hello(0.01))
     print(c.hello(0.05))
+
+    from python_sandbox import user_class
+
+    for _, cls in inspect.getmembers(user_class, inspect.isclass):
+        wrap_class_method(cls)
+
+    user = user_class.User("curekoshimizu", 18)
+    assert user.name == "curekoshimizu"
+    assert user.get_age() == 18
