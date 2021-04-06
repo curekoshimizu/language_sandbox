@@ -120,7 +120,11 @@ mod tests {
         let mut handles = vec![];
 
         for _ in 0..10 {
-            let counter = counter.clone();
+            // NOTE:
+            //  These codes are same. But Arc::clone is better because x.clone() makes us think
+            //  depp copy which makes programs slow.
+            // let counter = counter.clone();
+            let counter = Arc::clone(&counter);
             let handle = thread::spawn(move || {
                 let mut num = counter.lock().unwrap();
 
