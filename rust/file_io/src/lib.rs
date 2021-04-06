@@ -132,7 +132,7 @@ pub fn read_lines(line_num: usize, path: &PathBuf) -> Result<()> {
 mod tests {
     use super::*;
     use std::time::Instant;
-    use tempfile::TempDir;
+    use tempfile::{NamedTempFile, TempDir};
 
     macro_rules! measure {
         ($name:expr, $x:expr) => {{
@@ -232,12 +232,11 @@ mod tests {
 
     #[test]
     fn read_bytes() -> Result<()> {
-        let tmp = TempDir::new()?;
-        let temp_dir = tmp.path().to_path_buf();
+        let f = NamedTempFile::new()?;
+        let read_file_bytes = f.path().to_path_buf();
 
         {
             let bytes_data: Vec<u8> = vec![0xB; 100_000_000]; // all B array
-            let read_file_bytes = temp_dir.join("data");
             buffered_write_bytes(1, &read_file_bytes, &bytes_data)?;
 
             measure!(
@@ -259,11 +258,11 @@ mod tests {
 
     #[test]
     fn read_str() -> Result<()> {
-        let tmp = TempDir::new()?;
-        let temp_dir = tmp.path().to_path_buf();
+        let f = NamedTempFile::new()?;
+        let read_file_string = f.path().to_path_buf();
 
         let str_data = "party parrot\n".to_string();
-        let read_file_string = temp_dir.join("string");
+
         buffered_write_string(100000, &&read_file_string, &str_data)?;
         {
             measure!(
@@ -285,18 +284,22 @@ mod tests {
 
     #[test]
     fn write_read_lines() -> Result<()> {
-        let tmp = TempDir::new()?;
-        let temp_dir = tmp.path().to_path_buf();
-
         let line_num = 1000000;
         let str_data = "party parrot\n".to_string();
-        let fname = temp_dir.join("a");
 
-        measure!("[7] write lines", {
-            buffered_write_string(line_num, &fname, &str_data)?;
-        });
+        let fname;
+        {
+            let f = NamedTempFile::new()?;
+            fname = f.path().to_path_buf();
 
-        measure!("[7] read lines", read_lines(line_num, &fname)?);
+            measure!("[7] write lines", {
+                buffered_write_string(line_num, &fname, &str_data)?;
+            });
+
+            measure!("[7] read lines", read_lines(line_num, &fname)?);
+            assert!(fname.exists());
+        }
+        assert!(!fname.exists());
 
         Ok(())
     }
