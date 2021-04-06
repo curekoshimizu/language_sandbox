@@ -289,4 +289,67 @@ mod tests {
 
         Ok(())
     }
+
+    #[tokio::test]
+    async fn write_read_lines() -> Result<()> {
+        let line_num = 1000000;
+        let str_data = "party parrot\n".to_string();
+
+        {
+            let f = NamedTempFile::new()?;
+
+            measure!("[5W] sync write lines", {
+                use std::fs::File;
+                use std::io::BufWriter;
+                use std::io::Write;
+
+                let mut f = BufWriter::new(File::create(&f)?);
+                for _ in 0..line_num {
+                    f.write_all(str_data.as_bytes())?;
+                }
+            });
+
+            measure!("[5R] sync read lines", {
+                use std::fs::File;
+                use std::io::BufRead;
+                use std::io::BufReader;
+
+                let f = BufReader::new(File::open(f)?);
+                assert_eq!(f.lines().count(), line_num);
+            });
+        }
+
+        {
+            let f = NamedTempFile::new()?;
+
+            measure!("[5W]async write lines", {
+                use tokio::fs::File;
+                use tokio::io::AsyncWriteExt;
+                use tokio::io::BufWriter;
+
+                let mut f = BufWriter::new(File::create(&f).await?);
+                for _ in 0..line_num {
+                    f.write_all(str_data.as_bytes()).await?;
+                }
+                f.flush().await?;
+            });
+
+            measure!("[5R]async read lines", {
+                use tokio::fs::File;
+                use tokio::io::AsyncBufReadExt;
+                use tokio::io::BufReader;
+
+                let f = BufReader::new(File::open(f).await?);
+                let mut lines = f.lines();
+                let mut count = 0;
+                while let Some(_) = lines.next_line().await? {
+                    count += 1;
+                }
+
+                assert_eq!(count, line_num);
+            });
+        }
+
+        Ok(())
+    }
 }
