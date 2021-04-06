@@ -3,31 +3,31 @@ use std::fs::File;
 use std::io::BufRead;
 use std::io::BufReader;
 use std::io::BufWriter;
-use std::io::Error;
 use std::io::Read;
+use std::io::Result;
 use std::io::Write;
 use std::path::PathBuf;
 
 // bad
-pub fn write_bytes(loop_cnt: i32, path: &PathBuf, data: &Vec<u8>) -> Result<(), Error> {
+pub fn write_bytes(loop_cnt: i32, path: &PathBuf, data: &Vec<u8>) -> Result<()> {
     let mut f = File::create(path)?;
     for _ in 0..loop_cnt {
-        f.write(data)?;
+        f.write_all(data)?;
     }
     Ok(())
 }
 
 // good!
-pub fn buffered_write_bytes(loop_cnt: i32, path: &PathBuf, data: &Vec<u8>) -> Result<(), Error> {
+pub fn buffered_write_bytes(loop_cnt: i32, path: &PathBuf, data: &Vec<u8>) -> Result<()> {
     let mut f = BufWriter::new(File::create(path)?);
     for _ in 0..loop_cnt {
-        f.write(data)?;
+        f.write_all(data)?;
     }
     Ok(())
 }
 
 // bad
-pub fn write_string(loop_cnt: i32, path: &PathBuf, data: &String) -> Result<(), Error> {
+pub fn write_string_macro(loop_cnt: i32, path: &PathBuf, data: &String) -> Result<()> {
     let mut f = File::create(path)?;
     for _ in 0..loop_cnt {
         write!(f, "{}", data)?;
@@ -35,8 +35,17 @@ pub fn write_string(loop_cnt: i32, path: &PathBuf, data: &String) -> Result<(), 
     Ok(())
 }
 
+// bad
+pub fn write_string(loop_cnt: i32, path: &PathBuf, data: &String) -> Result<()> {
+    let mut f = File::create(path)?;
+    for _ in 0..loop_cnt {
+        f.write_all(data.as_bytes())?;
+    }
+    Ok(())
+}
+
 // good!
-pub fn buffered_write_string(loop_cnt: i32, path: &PathBuf, data: &String) -> Result<(), Error> {
+pub fn buffered_write_string(loop_cnt: i32, path: &PathBuf, data: &String) -> Result<()> {
     let mut f = BufWriter::new(File::create(path)?);
     for _ in 0..loop_cnt {
         write!(f, "{}", data)?;
@@ -45,7 +54,7 @@ pub fn buffered_write_string(loop_cnt: i32, path: &PathBuf, data: &String) -> Re
 }
 
 // not simple
-pub fn read_all_bytes(loop_cnt: i32, path: &PathBuf) -> Result<(), Error> {
+pub fn read_all_bytes(loop_cnt: i32, path: &PathBuf) -> Result<()> {
     for _ in 0..loop_cnt {
         let mut f = File::open(path)?;
         let mut buf = Vec::new();
@@ -57,7 +66,7 @@ pub fn read_all_bytes(loop_cnt: i32, path: &PathBuf) -> Result<(), Error> {
 }
 
 // not simple
-pub fn buffered_read_all_bytes(loop_cnt: i32, path: &PathBuf) -> Result<(), Error> {
+pub fn buffered_read_all_bytes(loop_cnt: i32, path: &PathBuf) -> Result<()> {
     for _ in 0..loop_cnt {
         let mut f = BufReader::new(File::open(path)?);
         let mut buf = Vec::new();
@@ -69,7 +78,7 @@ pub fn buffered_read_all_bytes(loop_cnt: i32, path: &PathBuf) -> Result<(), Erro
 }
 
 // not simple
-pub fn fs_read_all_bytes(loop_cnt: i32, path: &PathBuf) -> Result<(), Error> {
+pub fn fs_read_all_bytes(loop_cnt: i32, path: &PathBuf) -> Result<()> {
     for _ in 0..loop_cnt {
         let buf = fs::read(&path)?;
         assert_eq!(buf.len(), 100000000);
@@ -79,7 +88,7 @@ pub fn fs_read_all_bytes(loop_cnt: i32, path: &PathBuf) -> Result<(), Error> {
 }
 
 // not simple
-pub fn read_all_strings(loop_cnt: i32, path: &PathBuf) -> Result<(), Error> {
+pub fn read_all_strings(loop_cnt: i32, path: &PathBuf) -> Result<()> {
     for _ in 0..loop_cnt {
         let mut f = File::open(path)?;
         let mut buf = String::new();
@@ -91,7 +100,7 @@ pub fn read_all_strings(loop_cnt: i32, path: &PathBuf) -> Result<(), Error> {
 }
 
 // not simple
-pub fn buffered_read_all_strings(loop_cnt: i32, path: &PathBuf) -> Result<(), Error> {
+pub fn buffered_read_all_strings(loop_cnt: i32, path: &PathBuf) -> Result<()> {
     for _ in 0..loop_cnt {
         let mut f = BufReader::new(File::open(path)?);
         let mut buf = String::new();
@@ -103,7 +112,7 @@ pub fn buffered_read_all_strings(loop_cnt: i32, path: &PathBuf) -> Result<(), Er
 }
 
 // simple!!
-pub fn fs_read_all_strings(loop_cnt: i32, path: &PathBuf) -> Result<(), Error> {
+pub fn fs_read_all_strings(loop_cnt: i32, path: &PathBuf) -> Result<()> {
     for _ in 0..loop_cnt {
         let buf = fs::read_to_string(path)?;
         assert_eq!(buf.len(), 1300000);
@@ -112,7 +121,7 @@ pub fn fs_read_all_strings(loop_cnt: i32, path: &PathBuf) -> Result<(), Error> {
     Ok(())
 }
 
-pub fn read_lines(loop_cnt: i32, path: &PathBuf) -> Result<(), Error> {
+pub fn read_lines(loop_cnt: i32, path: &PathBuf) -> Result<()> {
     for _ in 0..loop_cnt {
         let f = BufReader::new(File::open(path)?);
         assert_eq!(f.lines().count(), 100000);
@@ -142,7 +151,7 @@ mod tests {
     }
 
     #[test]
-    fn test_write_file() -> Result<(), Error> {
+    fn test_write_file() -> Result<()> {
         let tmp = TempDir::new()?;
         let temp_dir = tmp.path().to_path_buf();
 
@@ -187,7 +196,7 @@ mod tests {
             let loop_cnt = 100000;
             let str_data = "party parrot".to_string();
             measure!("write string", {
-                write_string(
+                write_string_macro(
                     loop_cnt,
                     &temp_dir.join("small_write_string.txt"),
                     &str_data,
@@ -206,13 +215,24 @@ mod tests {
             println!("[big data]");
             let loop_cnt = 10;
             let str_data = "a".repeat(10_000_000);
+            measure!("write string macro", {
+                write_string_macro(
+                    loop_cnt,
+                    &temp_dir.join("big_write_string_macro_1.txt"),
+                    &str_data,
+                )?;
+            });
             measure!("write string", {
-                write_string(loop_cnt, &temp_dir.join("big_write_string.txt"), &str_data)?;
+                write_string(
+                    loop_cnt,
+                    &temp_dir.join("big_write_string_1.txt"),
+                    &str_data,
+                )?;
             });
             measure!("buffered write string★", {
                 buffered_write_string(
                     loop_cnt,
-                    &temp_dir.join("big_buffered_write_string.txt"),
+                    &temp_dir.join("big_buffered_write_string_1.txt"),
                     &str_data,
                 )?;
             }); // best!
@@ -222,13 +242,24 @@ mod tests {
             println!("[big data]");
             let loop_cnt = 10;
             let str_data = "a".repeat(10_000_000);
+            measure!("write string macro", {
+                write_string_macro(
+                    loop_cnt,
+                    &temp_dir.join("big_write_string_macro_2.txt"),
+                    &str_data,
+                )?;
+            });
             measure!("write string", {
-                write_string(loop_cnt, &temp_dir.join("big_write_string.txt"), &str_data)?;
+                write_string(
+                    loop_cnt,
+                    &temp_dir.join("big_write_string_2.txt"),
+                    &str_data,
+                )?;
             });
             measure!("buffered write string★", {
                 buffered_write_string(
                     loop_cnt,
-                    &temp_dir.join("big_buffered_write_string.txt"),
+                    &temp_dir.join("big_buffered_write_string_2.txt"),
                     &str_data,
                 )?;
             }); // best!
@@ -238,7 +269,7 @@ mod tests {
     }
 
     #[test]
-    fn test_read_file() -> Result<(), Error> {
+    fn test_read_file() -> Result<()> {
         let tmp = TempDir::new()?;
         let temp_dir = tmp.path().to_path_buf();
 
