@@ -5,6 +5,20 @@ from abc import abstractmethod
 from typing import Set
 
 
+class ObserverInterface(abc.ABC):
+    @abstractmethod
+    def on_notify(self, observable: SubjectInterface, message: str) -> None:
+        ...
+
+
+class Observer(ObserverInterface):
+    def __init__(self, prefix: str):
+        self._prefix: str = prefix
+
+    def on_notify(self, observable: SubjectInterface, message: str) -> None:
+        print(self._prefix, "Observer received. ", message)
+
+
 class SubjectInterface(abc.ABC):
     @abstractmethod
     def subscribe(self, observer: ObserverInterface) -> None:
@@ -31,33 +45,21 @@ class Subject(SubjectInterface):
 
     def notify(self, message: str) -> None:
         for observer in self._observers:
-            observer.notify(self, message)
-
-
-class ObserverInterface(abc.ABC):
-    @abstractmethod
-    def notify(self, observable: SubjectInterface, message: str) -> None:
-        ...
-
-
-class Observer(ObserverInterface):
-    def __init__(self, observable: SubjectInterface, prefix: str):
-        self._prefix: str = prefix
-        observable.subscribe(self)
-
-    def notify(self, observable: SubjectInterface, message: str) -> None:
-        print(self._prefix, "Observer received. ", message)
+            observer.on_notify(self, message)
 
 
 def test_observer() -> None:
     print("[observer]")
     subject = Subject()
-    observer_a = Observer(subject, "I'am observer A. ")
-    observer_b = Observer(subject, "I'am observer B. ")
+
+    observer_a = Observer("I'am observer A. ")
+    observer_b = Observer("I'am observer B. ")
+    subject.subscribe(observer_a)
+    subject.subscribe(observer_b)
 
     subject.notify("'Hello Observers 1'")
 
-    print("detach observe_b")
+    print("detach observer_b")
     subject.unsubscribe(observer_b)
     subject.notify("'Hello Observers 2'")
     subject.unsubscribe(observer_a)
