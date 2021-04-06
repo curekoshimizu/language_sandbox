@@ -21,13 +21,25 @@ struct AppStateWithCounter {
 #[derive(Deserialize, Serialize, Debug, PartialEq, Eq)]
 pub struct CounterResponse {
     counter: i32,
+    id: i32,
 }
 
-async fn counter_resp(data: web::Data<AppStateWithCounter>) -> web::Json<CounterResponse> {
+#[derive(Deserialize, Serialize, Debug, PartialEq, Eq)]
+pub struct UserData {
+    id: i32,
+}
+
+async fn counter_resp(
+    data: web::Data<AppStateWithCounter>,
+    user_data: web::Json<UserData>,
+) -> web::Json<CounterResponse> {
     let mut counter = data.counter.lock().unwrap();
     *counter += 1;
 
-    web::Json(CounterResponse { counter: *counter })
+    web::Json(CounterResponse {
+        counter: *counter,
+        id: user_data.id,
+    })
 }
 
 async fn hello() -> impl Responder {
@@ -66,15 +78,26 @@ mod tests {
     async fn test_root_response() {
         let mut app = test::init_service(App::new().configure(config)).await;
 
-        let req = test::TestRequest::get().uri("/").to_request();
-        let resp = test::call_service(&mut app, req).await;
-        assert!(resp.status().is_success());
+        {
+            // GET
+            let req = test::TestRequest::get().uri("/").to_request();
+            let resp = test::call_service(&mut app, req).await;
+            assert_eq!(resp.status().as_u16(), 200);
 
-        let bytes = test::read_body(resp).await;
-        let body = String::from_utf8(bytes.to_vec()).unwrap();
-        assert_eq!(body, "Hello Actix-web!");
+            let bytes = test::read_body(resp).await;
+            let body = String::from_utf8(bytes.to_vec()).unwrap();
+            assert_eq!(body, "Hello Actix-web!");
+        }
 
-        // TODO: post
+        {
+            // POST
+            let req = test::TestRequest::post().uri("/").to_request();
+            let resp = test::call_service(&mut app, req).await;
+            assert_eq!(resp.status().as_u16(), 404);
+
+            let bytes = test::read_body(resp).await;
+            assert_eq!(bytes.len(), 0);
+        }
     }
 
     #[actix_rt::test]
@@ -82,26 +105,48 @@ mod tests {
         let mut app = test::init_service(App::new().configure(config)).await;
 
         {
-            let req = test::TestRequest::get().uri("/counter").to_request();
+            // 1st try
+            let req = test::TestRequest::get()
+                .uri("/counter")
+                .set_json(&UserData { id: 123 })
+                .to_request();
             let resp = test::call_service(&mut app, req).await;
-            assert!(resp.status().is_success());
+            assert_eq!(resp.status(), http::StatusCode::OK);
 
             let resp_json: CounterResponse = test::read_body_json(resp).await;
-            assert_eq!(resp_json, CounterResponse { counter: 1 });
+            assert_eq!(
+                resp_json,
+                CounterResponse {
+                    counter: 1,
+                    id: 123
+                }
+            );
         }
 
         {
-            let req = test::TestRequest::get().uri("/counter").to_request();
+            // 2nd try
+            let req = test::TestRequest::get()
+                .uri("/counter")
+                .set_json(&UserData { id: 0x123 })
+                .to_request();
             let resp = test::call_service(&mut app, req).await;
-            assert!(resp.status().is_success());
+            assert_eq!(resp.status(), http::StatusCode::OK);
 
             let resp_json: CounterResponse = test::read_body_json(resp).await;
-            assert_eq!(resp_json, CounterResponse { counter: 2 });
+            assert_eq!(
+                resp_json,
+                CounterResponse {
+                    counter: 2,
+                    id: 0x123
+                }
+            );
+        }
+
+        {
+            // no param
+            let req = test::TestRequest::get().uri("/counter").to_request();
+            let resp = test::call_service(&mut app, req).await;
+            assert_eq!(resp.status(), http::StatusCode::BAD_REQUEST);
         }
     }
 }
-
-// TOOD:
-//   input Query or Json
-// TODO: template
-// TODO: not allowed
