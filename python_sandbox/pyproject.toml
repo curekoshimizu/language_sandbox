@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "__PROJECT_NAME__"
+name = "python_sandbox"
 version = "0.1.0"
 description = ""
 authors = ["curekoshimizu <shugo@manabe.mail-box.ne.jp>"]
