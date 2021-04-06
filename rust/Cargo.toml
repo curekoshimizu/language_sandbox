@@ -9,4 +9,5 @@ members = [
     "threading",
     "gof",
     "function",
+    "async_file_io",
 ]
