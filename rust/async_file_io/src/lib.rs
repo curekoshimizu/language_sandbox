@@ -17,12 +17,6 @@ mod tests {
             );
         }};
     }
-    macro_rules! async_flush {
-        ($f:expr, $x:expr) => {{
-            $x;
-            $f.flush().await?;
-        }};
-    }
 
     #[tokio::test]
     async fn write_small_bytes() -> Result<()> {
@@ -66,7 +60,7 @@ mod tests {
             for _ in 0..write_loop_cnt {
                 f.write_all(&bytes_data).await?;
             }
-            f.flush().await?; // You can use async_flush macro instead.
+            f.flush().await?;
         });
 
         measure!("async read all bytes (1)", {
@@ -122,11 +116,10 @@ mod tests {
             use tokio::io::BufWriter;
 
             let mut f = BufWriter::new(File::create(&fname).await?);
-            async_flush!(f, {
-                for _ in 0..write_loop_cnt {
-                    f.write_all(&bytes_data).await?;
-                }
-            });
+            for _ in 0..write_loop_cnt {
+                f.write_all(&bytes_data).await?;
+            }
+            f.flush().await?;
         });
 
         measure!("async read all bytes (2)", {
