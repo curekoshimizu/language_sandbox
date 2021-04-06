@@ -10,4 +10,5 @@ members = [
     "gof",
     "function",
     "async_file_io",
+    "web_server",
 ]
