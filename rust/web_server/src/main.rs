@@ -7,10 +7,6 @@ extern crate log;
 
 mod config;
 
-// TODO: template
-// TODO: test code
-// TODO: not allowed
-
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     env::set_var("RUST_LOG", "debug");
