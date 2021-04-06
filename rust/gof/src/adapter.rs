@@ -5,6 +5,8 @@ pub trait HasName {
 #[derive(Debug)]
 pub struct Dog {}
 pub struct Cat {}
+pub struct Human {}
+pub struct Car {}
 
 impl Dog {
     pub fn new() -> Self {
@@ -36,23 +38,35 @@ impl HasName for Cat {
     }
 }
 
-// pub struct Adapter<T, F> {
-//     _obj: T,
-//     _make_noise: F,
-// }
-//
-// impl<T: HasName, F: Fn(&T) -> String> Adapter<T, F> {
-//     pub fn new(obj: T, noise: F) -> Self {
-//         Adapter {
-//             _obj: obj,
-//             _make_noise: noise,
-//         }
-//     }
-//
-//     pub fn make_noise(&self) -> String {
-//         (self._make_noise)(&self._obj)
-//     }
-// }
+impl Human {
+    pub fn new() -> Self {
+        Human {}
+    }
+    pub fn hello(&self) -> String {
+        "hello!".to_string()
+    }
+}
+
+impl HasName for Human {
+    fn name(&self) -> String {
+        "human".to_string()
+    }
+}
+
+impl Car {
+    pub fn new() -> Self {
+        Car {}
+    }
+    pub fn noise(&self, level: usize) -> String {
+        "vroom ".repeat(level).to_string() + "!"
+    }
+}
+
+impl HasName for Car {
+    fn name(&self) -> String {
+        "car".to_string()
+    }
+}
 
 pub trait Adapter {
     fn make_noise(&self) -> String;
@@ -68,6 +82,16 @@ impl Adapter for Cat {
         self.meow()
     }
 }
+impl Adapter for Human {
+    fn make_noise(&self) -> String {
+        self.hello()
+    }
+}
+impl Adapter for Car {
+    fn make_noise(&self) -> String {
+        self.noise(2)
+    }
+}
 
 #[cfg(test)]
 mod tests {
@@ -78,6 +102,8 @@ mod tests {
         let mut objects: Vec<Box<dyn Adapter>> = Vec::new();
         objects.push(Box::new(Dog::new()));
         objects.push(Box::new(Cat::new()));
+        objects.push(Box::new(Human::new()));
+        objects.push(Box::new(Car::new()));
 
         for obj in objects.iter() {
             // println!("{} says {}", obj.name(), obj.make_noise());
