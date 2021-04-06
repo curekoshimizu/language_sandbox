@@ -24,6 +24,9 @@ async fn sleep_msec(sleep_time: u64) -> u64 {
 
 fn main() -> Result<(), io::Error> {
     // like. asyncio.run(coro()) in python
+    // but. not recommend this way,
+    // because actual tokio::main macro is more complicated.
+    // please use cargo expand to check the macro.
     tokio::runtime::Runtime::new()?.block_on(async_func());
 
     let ret = async_main_macro();
@@ -94,9 +97,68 @@ async fn async_main_macro() -> u32 {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::thread;
 
     #[tokio::test]
     async fn async_test() {
         assert_eq!(sleep_msec(100).await, 100);
+    }
+
+    async fn non_blocking(sleep_time: u64) {
+        let start = Instant::now();
+        time::sleep(time::Duration::from_millis(sleep_time)).await;
+        println!(
+            "[id={:?}] async sleep elapsed time = {} msec. expect = {}",
+            thread::current().id(),
+            start.elapsed().as_millis(),
+            sleep_time,
+        );
+    }
+    async fn blocking() {
+        use std::time::Duration;
+
+        let start = Instant::now();
+        let expect = 300;
+        thread::sleep(Duration::from_millis(expect));
+        println!(
+            "[id={:?}] blocking sleep elapsed time = {} msec. expect = {}",
+            thread::current().id(),
+            start.elapsed().as_millis(),
+            expect,
+        );
+    }
+
+    #[test]
+    fn async_test_with_blocking() {
+        #[tokio::main]
+        async fn async_main() {
+            let start = Instant::now();
+
+            tokio::join!(non_blocking(100), non_blocking(50), blocking(),);
+
+            println!("{} msec", start.elapsed().as_millis());
+        }
+
+        async_main();
+    }
+
+    #[test]
+    fn async_test_with_blocking_2() {
+        #[tokio::main]
+        async fn async_main() {
+            let start = Instant::now();
+
+            let task_1 = tokio::spawn(non_blocking(100));
+            let task_2 = tokio::spawn(non_blocking(50));
+            let task_3 = tokio::spawn(blocking());
+
+            if let (Ok(_), Ok(_), Ok(_)) = tokio::join![task_1, task_2, task_3] {
+                println!("{} msec", start.elapsed().as_millis());
+            } else {
+                panic!("join failed...");
+            }
+        }
+
+        async_main();
     }
 }
