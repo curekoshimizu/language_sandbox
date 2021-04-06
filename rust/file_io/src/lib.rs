@@ -151,117 +151,18 @@ mod tests {
     }
 
     #[test]
-    fn test_write_file() -> Result<()> {
+    fn write_small_bytes() -> Result<()> {
         let tmp = TempDir::new()?;
         let temp_dir = tmp.path().to_path_buf();
 
         {
-            println!("[small data]");
             let loop_cnt = 100000;
             let bytes_data = b"party parrot".to_vec();
-            measure!("write byte", {
-                write_bytes(
-                    loop_cnt,
-                    &temp_dir.join("small_write_bytes.txt"),
-                    &bytes_data,
-                )?;
+            measure!("[1] write byte", {
+                write_bytes(loop_cnt, &temp_dir.join("a"), &bytes_data)?;
             });
-            measure!("buffered write byte★", {
-                buffered_write_bytes(
-                    loop_cnt,
-                    &temp_dir.join("small_buffered_write_bytes.txt"),
-                    &bytes_data,
-                )?;
-            }); // best!
-        }
-
-        {
-            println!("[big data]");
-            let loop_cnt = 8;
-            let bytes_data: Vec<u8> = vec![0xB; 100_000_000]; // all B array
-            measure!("write byte", {
-                write_bytes(loop_cnt, &temp_dir.join("big_write_bytes.txt"), &bytes_data)?;
-            });
-            measure!("buffered write byte★", {
-                buffered_write_bytes(
-                    loop_cnt,
-                    &temp_dir.join("big_buffered_write_bytes.txt"),
-                    &bytes_data,
-                )?;
-            }); // best!
-        }
-
-        {
-            println!("[small data]");
-            let loop_cnt = 100000;
-            let str_data = "party parrot".to_string();
-            measure!("write string", {
-                write_string_macro(
-                    loop_cnt,
-                    &temp_dir.join("small_write_string.txt"),
-                    &str_data,
-                )?;
-            });
-            measure!("buffered write string★", {
-                buffered_write_string(
-                    loop_cnt,
-                    &temp_dir.join("small_buffered_write_string.txt"),
-                    &str_data,
-                )?;
-            }); // best!
-        }
-
-        {
-            println!("[big data]");
-            let loop_cnt = 10;
-            let str_data = "a".repeat(10_000_000);
-            measure!("write string macro", {
-                write_string_macro(
-                    loop_cnt,
-                    &temp_dir.join("big_write_string_macro_1.txt"),
-                    &str_data,
-                )?;
-            });
-            measure!("write string", {
-                write_string(
-                    loop_cnt,
-                    &temp_dir.join("big_write_string_1.txt"),
-                    &str_data,
-                )?;
-            });
-            measure!("buffered write string★", {
-                buffered_write_string(
-                    loop_cnt,
-                    &temp_dir.join("big_buffered_write_string_1.txt"),
-                    &str_data,
-                )?;
-            }); // best!
-        }
-
-        {
-            println!("[big data]");
-            let loop_cnt = 10;
-            let str_data = "a".repeat(10_000_000);
-            measure!("write string macro", {
-                write_string_macro(
-                    loop_cnt,
-                    &temp_dir.join("big_write_string_macro_2.txt"),
-                    &str_data,
-                )?;
-            });
-            measure!("write string", {
-                write_string(
-                    loop_cnt,
-                    &temp_dir.join("big_write_string_2.txt"),
-                    &str_data,
-                )?;
-            });
-            measure!("buffered write string★", {
-                buffered_write_string(
-                    loop_cnt,
-                    &temp_dir.join("big_buffered_write_string_2.txt"),
-                    &str_data,
-                )?;
+            measure!("[1] buffered write byte★", {
+                buffered_write_bytes(loop_cnt, &temp_dir.join("b"), &bytes_data)?;
             }); // best!
         }
 
@@ -269,52 +170,125 @@ mod tests {
     }
 
     #[test]
-    fn test_read_file() -> Result<()> {
+    fn write_big_bytes() -> Result<()> {
         let tmp = TempDir::new()?;
         let temp_dir = tmp.path().to_path_buf();
 
         {
-            println!("[read all as bytes]");
+            let loop_cnt = 8;
+            let bytes_data: Vec<u8> = vec![0xB; 100_000_000]; // all B array
+            measure!("[2] write byte", {
+                write_bytes(loop_cnt, &temp_dir.join("a"), &bytes_data)?;
+            });
+            measure!("[2] buffered write byte★", {
+                buffered_write_bytes(loop_cnt, &temp_dir.join("b"), &bytes_data)?;
+            }); // best!
+        }
+
+        Ok(())
+    }
+
+    #[test]
+    fn write_small_str() -> Result<()> {
+        let tmp = TempDir::new()?;
+        let temp_dir = tmp.path().to_path_buf();
+
+        {
+            let loop_cnt = 100000;
+            let str_data = "party parrot".to_string();
+            measure!("[3] write string macro", {
+                write_string_macro(loop_cnt, &temp_dir.join("a"), &str_data)?;
+            });
+            measure!("[3] write string", {
+                write_string(loop_cnt, &temp_dir.join("b"), &str_data)?;
+            });
+            measure!("[3] buffered write string★", {
+                buffered_write_string(loop_cnt, &temp_dir.join("c"), &str_data)?;
+            }); // best!
+        }
+
+        Ok(())
+    }
+
+    #[test]
+    fn write_big_str() -> Result<()> {
+        let tmp = TempDir::new()?;
+        let temp_dir = tmp.path().to_path_buf();
+
+        {
+            let loop_cnt = 10;
+            let str_data = "a".repeat(20_000_000);
+            measure!("[4] write string macro", {
+                write_string_macro(loop_cnt, &temp_dir.join("a"), &str_data)?;
+            });
+            measure!("[4] write string", {
+                write_string(loop_cnt, &temp_dir.join("b"), &str_data)?;
+            });
+            measure!("[4] buffered write string★", {
+                buffered_write_string(loop_cnt, &temp_dir.join("c"), &str_data)?;
+            }); // best!
+        }
+
+        Ok(())
+    }
+
+    #[test]
+    fn read_bytes() -> Result<()> {
+        let tmp = TempDir::new()?;
+        let temp_dir = tmp.path().to_path_buf();
+
+        {
             let bytes_data: Vec<u8> = vec![0xB; 100_000_000]; // all B array
             let read_file_bytes = temp_dir.join("data");
             buffered_write_bytes(1, &read_file_bytes, &bytes_data)?;
 
-            measure!("read all as bytes", read_all_bytes(10, &read_file_bytes)?);
             measure!(
-                "buffered read all as bytes",
+                "[5] read all as bytes",
+                read_all_bytes(10, &read_file_bytes)?
+            );
+            measure!(
+                "[5] buffered read all as bytes",
                 buffered_read_all_bytes(10, &read_file_bytes)?
             );
             measure!(
-                "fs read all as bytes★",
+                "[5] fs read all as bytes★",
                 fs_read_all_bytes(10, &read_file_bytes)?
             ); // best!
         }
+
+        Ok(())
+    }
+
+    #[test]
+    fn read_str() -> Result<()> {
+        let tmp = TempDir::new()?;
+        let temp_dir = tmp.path().to_path_buf();
 
         let str_data = "party parrot\n".to_string();
         let read_file_string = temp_dir.join("string");
         buffered_write_string(100000, &&read_file_string, &str_data)?;
         {
-            println!("[read all as string]");
-
             measure!(
-                "read all as string",
+                "[6] read all as string",
                 read_all_strings(1000, &read_file_string)?
             );
             measure!(
-                "buffered read all as string",
+                "[6] buffered read all as string",
                 buffered_read_all_strings(1000, &read_file_string)?
             );
             measure!(
-                "fs read all as string★",
+                "[6] fs read all as string★",
                 fs_read_all_strings(1000, &read_file_string)?
             ); // best!
         }
 
-        {
-            println!("[read lines]");
-            measure!("read lines★", read_lines(10, &read_file_string)?);
-        }
-
+        // #[test]
+        // fn read_str() -> Result<()> {
+        //     {
+        //         println!("[read lines]");
+        //         measure!("read lines★", read_lines(10, &read_file_string)?);
+        //     }
+        //
         Ok(())
     }
 }
