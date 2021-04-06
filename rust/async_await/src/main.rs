@@ -17,9 +17,7 @@ async fn sleep_msec(sleep_time: u64) -> u64 {
 }
 
 // TODO:
-// asyncio.Lock --> Mutex?
 // asyncio.generator --> tokio_streams?
-// rx, channel
 // web server
 
 fn main() -> Result<(), io::Error> {
@@ -160,5 +158,111 @@ mod tests {
         }
 
         async_main();
+    }
+
+    #[tokio::test]
+    async fn async_mutex() {
+        use threading::NUM_THREADS;
+
+        const LOOP: usize = NUM_THREADS;
+
+        use std::sync::Arc;
+        use tokio::sync::Mutex;
+        use tokio::sync::RwLock;
+
+        {
+            let start = Instant::now();
+            let counter = Arc::new(Mutex::new(0));
+            let mut handles = vec![];
+
+            for _ in 0..LOOP {
+                let counter = Arc::clone(&counter);
+                let handle = tokio::spawn(async move {
+                    let mut num = counter.lock().await;
+
+                    *num += 1;
+                });
+                handles.push(handle);
+            }
+
+            for handle in handles {
+                handle.await.unwrap();
+            }
+
+            assert_eq!(*counter.lock().await, LOOP);
+            println!("Async Arc+Mutex : {} msec", start.elapsed().as_millis())
+        }
+        {
+            let start = Instant::now();
+            let counter = Arc::new(Mutex::new(0));
+            let mut handles = vec![];
+
+            for _ in 0..LOOP {
+                let counter = Arc::clone(&counter);
+                let handle = tokio::spawn(async move {
+                    let mut num = counter.lock().await;
+
+                    *num += 1;
+                });
+                handles.push(handle);
+            }
+
+            futures::future::join_all(handles).await;
+
+            assert_eq!(*counter.lock().await, LOOP);
+            println!(
+                "Async Arc+Mutex (join_all) : {} msec",
+                start.elapsed().as_millis()
+            )
+        }
+        {
+            let start = Instant::now();
+
+            // Use Arc and RwLock
+            let counter = Arc::new(RwLock::new(0));
+            let mut handles = vec![];
+
+            for _ in 0..LOOP {
+                let counter = Arc::clone(&counter);
+                let handle = tokio::spawn(async move {
+                    let mut num = counter.write().await;
+
+                    *num += 1;
+                });
+                handles.push(handle);
+            }
+
+            for handle in handles {
+                handle.await.unwrap();
+            }
+
+            assert_eq!(*counter.read().await, LOOP);
+            println!("Async Arc+RwLock : {} msec", start.elapsed().as_millis())
+        }
+        {
+            // Use futures::future::join_all
+
+            let start = Instant::now();
+            let counter = Arc::new(RwLock::new(0));
+            let mut handles = vec![];
+
+            for _ in 0..LOOP {
+                let counter = Arc::clone(&counter);
+                let handle = tokio::spawn(async move {
+                    let mut num = counter.write().await;
+
+                    *num += 1;
+                });
+                handles.push(handle);
+            }
+
+            futures::future::join_all(handles).await;
+
+            assert_eq!(*counter.read().await, LOOP);
+            println!(
+                "Async Arc+RwLock (join_all) : {} msec",
+                start.elapsed().as_millis()
+            )
+        }
     }
 }
