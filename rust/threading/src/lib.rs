@@ -1,5 +1,9 @@
+pub const NUM_THREADS: usize = 20000;
+
 #[cfg(test)]
 mod tests {
+    use super::*;
+
     use std::sync::atomic::{AtomicUsize, Ordering};
     use std::sync::mpsc;
     use std::sync::Arc;
@@ -8,8 +12,6 @@ mod tests {
     use std::thread;
     use std::time::Duration;
     use std::time::Instant;
-
-    const NUM_THREADS: usize = 20000;
 
     #[test]
     fn simple_thread_test() {
