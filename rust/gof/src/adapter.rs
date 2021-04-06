@@ -99,20 +99,22 @@ mod tests {
 
     #[test]
     fn adapter() {
+        trait AdapterHasName: Adapter + HasName {}
+        impl<T: Adapter + HasName> AdapterHasName for T {}
+
         {
-            let mut objects: Vec<Box<dyn Adapter>> = Vec::new();
+            let mut objects: Vec<Box<dyn AdapterHasName>> = Vec::new();
             objects.push(Box::new(Dog::new()));
             objects.push(Box::new(Cat::new()));
             objects.push(Box::new(Human::new()));
             objects.push(Box::new(Car::new()));
             for obj in objects.iter() {
-                // println!("{} says {}", obj.name(), obj.make_noise());
-                println!("it says {}", obj.make_noise());
+                println!("{} says {}", obj.name(), obj.make_noise());
             }
         }
 
         {
-            let mut objects: Vec<&dyn Adapter> = Vec::new();
+            let mut objects: Vec<&dyn AdapterHasName> = Vec::new();
             let dog = Dog::new();
             let cat = Cat::new();
             let human = Human::new();
@@ -120,11 +122,10 @@ mod tests {
             objects.push(&dog);
             objects.push(&cat);
 
-            let mut objects_2: Vec<&dyn Adapter> = vec![&human, &car];
+            let mut objects_2: Vec<&dyn AdapterHasName> = vec![&human, &car];
             objects.append(&mut objects_2);
             for obj in objects.iter() {
-                // println!("{} says {}", obj.name(), obj.make_noise());
-                println!("it says {}", obj.make_noise());
+                println!("{} says {}", obj.name(), obj.make_noise());
             }
         }
     }
