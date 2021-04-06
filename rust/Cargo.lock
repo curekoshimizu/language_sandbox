@@ -10,6 +10,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "async_file_io"
+version = "0.1.0"
+dependencies = [
+ "tempfile",
+ "tokio",
+]
+
+[[package]]
 name = "autocfg"
 version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
