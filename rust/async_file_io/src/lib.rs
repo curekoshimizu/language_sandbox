@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use std::io::Error;
+    use std::io::Result;
     use std::time::Instant;
     use tempfile::TempDir;
 
@@ -19,7 +19,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn write_small_bytes() -> Result<(), Error> {
+    async fn write_small_bytes() -> Result<()> {
         let tmp = TempDir::new()?;
         let temp_dir = tmp.path().to_path_buf();
 
@@ -78,7 +78,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn write_big_bytes() -> Result<(), Error> {
+    async fn write_big_bytes() -> Result<()> {
         let tmp = TempDir::new()?;
         let temp_dir = tmp.path().to_path_buf();
 
@@ -137,7 +137,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn write_small_str() -> Result<(), Error> {
+    async fn write_small_str() -> Result<()> {
         let tmp = TempDir::new()?;
         let temp_dir = tmp.path().to_path_buf();
 
@@ -184,7 +184,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn write_big_str() -> Result<(), Error> {
+    async fn write_big_str() -> Result<()> {
         let tmp = TempDir::new()?;
         let temp_dir = tmp.path().to_path_buf();
 
@@ -231,7 +231,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn read_all_bytes() -> Result<(), Error> {
+    async fn read_all_bytes() -> Result<()> {
         let tmp = TempDir::new()?;
         let temp_dir = tmp.path().to_path_buf();
 
