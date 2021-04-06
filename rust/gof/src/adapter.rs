@@ -99,15 +99,33 @@ mod tests {
 
     #[test]
     fn adapter() {
-        let mut objects: Vec<Box<dyn Adapter>> = Vec::new();
-        objects.push(Box::new(Dog::new()));
-        objects.push(Box::new(Cat::new()));
-        objects.push(Box::new(Human::new()));
-        objects.push(Box::new(Car::new()));
+        {
+            let mut objects: Vec<Box<dyn Adapter>> = Vec::new();
+            objects.push(Box::new(Dog::new()));
+            objects.push(Box::new(Cat::new()));
+            objects.push(Box::new(Human::new()));
+            objects.push(Box::new(Car::new()));
+            for obj in objects.iter() {
+                // println!("{} says {}", obj.name(), obj.make_noise());
+                println!("it says {}", obj.make_noise());
+            }
+        }
 
-        for obj in objects.iter() {
-            // println!("{} says {}", obj.name(), obj.make_noise());
-            println!("it says {}", obj.make_noise());
+        {
+            let mut objects: Vec<&dyn Adapter> = Vec::new();
+            let dog = Dog::new();
+            let cat = Cat::new();
+            let human = Human::new();
+            let car = Car::new();
+            objects.push(&dog);
+            objects.push(&cat);
+
+            let mut objects_2: Vec<&dyn Adapter> = vec![&human, &car];
+            objects.append(&mut objects_2);
+            for obj in objects.iter() {
+                // println!("{} says {}", obj.name(), obj.make_noise());
+                println!("it says {}", obj.make_noise());
+            }
         }
     }
 }
