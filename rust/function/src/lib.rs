@@ -15,6 +15,10 @@ pub fn returns_closure() -> Box<dyn Fn(i32) -> i32> {
     Box::new(|x| x + 1)
 }
 
+pub fn returns_impl_closure() -> impl Fn(i32) -> i32 {
+    |x| x + 1
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -139,6 +143,23 @@ mod tests {
     }
 
     #[test]
+    fn impl_trait_size() {
+        let box_closure = returns_closure();
+        assert_eq!(box_closure(2), 3);
+
+        assert_eq!(std::mem::size_of_val(&box_closure), 16);
+
+        let trait_object: &dyn Fn(i32) -> i32 = &squared;
+        assert_eq!(trait_object(2), 4);
+        assert_eq!(std::mem::size_of_val(&trait_object), 16);
+
+        let impl_closure = returns_impl_closure();
+        assert_eq!(impl_closure(2), 3);
+
+        assert_eq!(std::mem::size_of_val(&impl_closure), 0); // !!!!
+    }
+
+    #[test]
     fn fn_pointer_function() {
         fn multi_applied(f: fn(i32) -> i32, x: i32) -> i32 {
             f(f(x))
@@ -163,13 +184,13 @@ mod tests {
         //   As you know, in its case, we need a far pointer.
         // assert_eq!(multi_applied(id, 3), 3);
 
-        fn _returns_closure() -> Box<dyn Fn(i32) -> i32> {
-            Box::new(|x| x + 1)
-        }
         // NOTE: compile error
         //   Because Box::new(|x| x + 1) is not fn pointer.
         //   As you know, in its case, we need a far pointer.
-        // assert_eq!(multi_applied(_returns_closure(), 3), 5);
+        // assert_eq!(multi_applied(returns_closure(), 3), 5);
+
+        // NOTE: compile error
+        // assert_eq!(multi_applied(returns_impl_closure(), 3), 5);
     }
 
     #[test]
@@ -203,5 +224,8 @@ mod tests {
 
         let f = returns_closure();
         assert_eq!(multi_applied(f, 3), 5);
+
+        let g = returns_impl_closure();
+        assert_eq!(multi_applied(g, 3), 5);
     }
 }
