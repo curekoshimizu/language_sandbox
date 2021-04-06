@@ -1,8 +1,3 @@
-// NOTE: Roughly speaking.
-//   fn : function pointer type
-//   Fn/FnMut/FnOnce : Closure type (trait objects)
-//      Both FnMut and FnOnce are supertraits of Fn.
-
 pub fn squared(x: i32) -> i32 {
     x * x
 }
@@ -19,10 +14,28 @@ pub fn returns_impl_closure() -> impl Fn(i32) -> i32 {
     |x| x + 1
 }
 
+pub fn inc_closure_generator() -> impl FnMut() -> i32 {
+    use std::cell::RefCell;
+
+    let num = RefCell::new(0);
+
+    move || {
+        *num.borrow_mut() += 1;
+        *num.borrow()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
 
+    #[test]
+    fn mutable_inc_closure() {
+        let mut f = inc_closure_generator();
+        assert_eq!(f(), 1);
+        assert_eq!(f(), 2);
+        assert_eq!(f(), 3);
+    }
     #[test]
     fn pointer() {
         use std::ops::Deref;
