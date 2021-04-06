@@ -43,6 +43,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "function"
+version = "0.1.0"
+
+[[package]]
 name = "getrandom"
 version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -52,6 +56,10 @@ dependencies = [
  "libc",
  "wasi",
 ]
+
+[[package]]
+name = "gof"
+version = "0.1.0"
 
 [[package]]
 name = "hermit-abi"

@@ -1,6 +1,8 @@
 #[cfg(test)]
 mod tests {
     use std::sync::mpsc;
+    use std::sync::Arc;
+    use std::sync::Mutex;
     use std::thread;
     use std::time::Duration;
 
@@ -52,7 +54,7 @@ mod tests {
         // multiple message
         {
             let (tx1, rx) = mpsc::channel();
-            let tx2 = mpsc::Sender::clone(&tx1);
+            let tx2 = tx1.clone();
 
             // tx1 is used for thread1
             // tx2 is used for thread2
@@ -95,5 +97,42 @@ mod tests {
             assert!(msg.contains("thread1"));
             assert!(msg.contains("thread2"));
         }
+    }
+
+    #[test]
+    fn simple_mutex() {
+        // use only the main thread
+
+        let m: Mutex<Vec<u32>> = Mutex::new(vec![1, 2, 3]);
+        {
+            let mut num = m.lock().unwrap();
+            *num.get_mut(0).unwrap() = 6;
+        }
+        assert_eq!(*m.lock().unwrap(), vec![6, 2, 3]);
+    }
+
+    #[test]
+    fn mutex_thread() {
+        // NOTE: Arc
+        //  Atomic Reference Counter.
+        //  Rc does not implement "Send" and "Sync"
+        let counter = Arc::new(Mutex::new(0));
+        let mut handles = vec![];
+
+        for _ in 0..10 {
+            let counter = counter.clone();
+            let handle = thread::spawn(move || {
+                let mut num = counter.lock().unwrap();
+
+                *num += 1;
+            });
+            handles.push(handle);
+        }
+
+        for handle in handles {
+            handle.join().unwrap();
+        }
+
+        assert_eq!(*counter.lock().unwrap(), 10);
     }
 }

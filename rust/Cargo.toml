@@ -7,4 +7,6 @@ members = [
     "file_io",
     "context_manager",
     "threading",
+    "gof",
+    "function",
 ]
