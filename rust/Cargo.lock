@@ -1232,9 +1232,11 @@ name = "grpc"
 version = "0.1.0"
 dependencies = [
  "bytes 1.0.1",
+ "futures-util",
  "prost",
  "prost-derive",
  "tokio 1.4.0",
+ "tokio-stream",
  "tonic",
  "tonic-build",
 ]

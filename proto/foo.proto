@@ -13,6 +13,6 @@ message ResponseMsg {
 service FooService {
     rpc Foo(RequestMsg)
         returns (ResponseMsg);
-    // rpc Bar(RequestMsg)
-    //     returns (stream ResponseMsg);
+    rpc FooStream(RequestMsg)
+        returns (stream ResponseMsg);
 }
