@@ -1,3 +1,5 @@
+use std::io;
+use std::net::TcpListener;
 use tokio::sync::mpsc;
 use tokio_stream::wrappers::ReceiverStream;
 use tonic::{Request, Response, Status};
@@ -42,20 +44,28 @@ impl FooService for FooServer {
     }
 }
 
+pub fn available_port() -> io::Result<u16> {
+    match TcpListener::bind("localhost:0") {
+        Ok(listener) => Ok(listener.local_addr().unwrap().port()),
+        Err(e) => Err(e),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use foo::foo_service_client::FooServiceClient;
     use foo::foo_service_server::FooServiceServer;
+    use futures_util::FutureExt;
+    use std::net::SocketAddr;
     use tokio::sync::oneshot;
     use tonic::transport::Server;
 
     #[tokio::test]
     async fn grpc_foo_test() -> Result<(), Box<dyn std::error::Error>> {
-        let address = "127.0.0.1:50051";
-        let addr = address.parse().unwrap();
-
-        use futures_util::FutureExt;
+        let port = available_port()?;
+        let address = format!("127.0.0.1:{}", port);
+        let socket_addr = address.parse::<SocketAddr>().unwrap();
 
         let (shutdown_tx, shutdown_rx) = oneshot::channel::<()>();
 
@@ -67,7 +77,7 @@ mod tests {
             ready_tx.send(()).unwrap(); // I am ready.
 
             server
-                .serve_with_shutdown(addr, shutdown_rx.map(|rx| drop(rx)))
+                .serve_with_shutdown(socket_addr, shutdown_rx.map(|rx| drop(rx)))
                 .await
         });
 
