@@ -1,3 +1,5 @@
+mod vec3;
+
 fn main() {
     const IMAGE_WIDTH: usize = 256;
     const IMAGE_HEIGHT: usize = 256;
@@ -7,7 +9,7 @@ fn main() {
     println!("255");
 
     for j in (0..IMAGE_HEIGHT).rev() {
-        for i in (0..IMAGE_WIDTH).rev() {
+        for i in 0..IMAGE_WIDTH {
             let r: f64 = i as f64 / (IMAGE_WIDTH - 1) as f64;
             let g: f64 = j as f64 / (IMAGE_WIDTH - 1) as f64;
             let b: f64 = 0.25;
