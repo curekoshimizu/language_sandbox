@@ -17,6 +17,8 @@ use std::fs::File;
 use std::io;
 use std::io::BufWriter;
 use std::io::Write;
+use std::sync::mpsc;
+use std::thread;
 use vec3::{Point3, Vec3};
 use world::World;
 
@@ -43,8 +45,18 @@ const IMAGE_HEIGHT: usize = (IMAGE_WIDTH as f64 / ASPECT_RATIO) as usize;
 const SAMPLES_PER_PIXEL: usize = 100;
 
 fn main() -> io::Result<()> {
-    let uniform_gen = Uniform::from(0.0..1.0);
-    let mut rng = thread_rng();
+    let (rand_tx, rand_rx) = mpsc::channel();
+
+    let handle = thread::spawn(move || {
+        // random number generator thread
+        let uniform_gen = Uniform::from(0.0..1.0);
+        let mut rng = thread_rng();
+        let rand_val = uniform_gen.sample(&mut rng);
+        for _ in 0..IMAGE_HEIGHT * IMAGE_WIDTH * SAMPLES_PER_PIXEL * 2 {
+            rand_tx.send(rand_val).unwrap();
+        }
+    });
+
     let camera = Camera::new(ASPECT_RATIO);
 
     let mut world = World::new();
@@ -63,8 +75,8 @@ fn main() -> io::Result<()> {
             let mut pixel_color = Vec3::new(0.0, 0.0, 0.0);
 
             for _ in 0..SAMPLES_PER_PIXEL {
-                let u_delta = uniform_gen.sample(&mut rng);
-                let v_delta = uniform_gen.sample(&mut rng);
+                let u_delta = rand_rx.recv().unwrap();
+                let v_delta = rand_rx.recv().unwrap();
 
                 let u = (i as f64 + u_delta) / (IMAGE_WIDTH - 1) as f64;
                 let v = (j as f64 + v_delta) / (IMAGE_HEIGHT - 1) as f64;
@@ -78,6 +90,8 @@ fn main() -> io::Result<()> {
             write!(f, "{}\n", Color::from(pixel_color))?;
         }
     }
+
+    handle.join().unwrap();
 
     Ok(())
 }
