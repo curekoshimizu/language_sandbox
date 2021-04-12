@@ -9,6 +9,8 @@ mod world;
 use crate::hittable::Hittable;
 use camera::Camera;
 use color::Color;
+use rand::distributions::{Distribution, Uniform};
+use rand::thread_rng;
 use ray::Ray;
 use sphere::Sphere;
 use std::fs::File;
@@ -38,7 +40,11 @@ const ASPECT_RATIO: f64 = 16.0 / 9.0;
 const IMAGE_WIDTH: usize = 400;
 const IMAGE_HEIGHT: usize = (IMAGE_WIDTH as f64 / ASPECT_RATIO) as usize;
 
+const SAMPLES_PER_PIXEL: usize = 100;
+
 fn main() -> io::Result<()> {
+    let uniform_gen = Uniform::from(0.0..1.0);
+    let mut rng = thread_rng();
     let camera = Camera::new(ASPECT_RATIO);
 
     let mut world = World::new();
@@ -54,12 +60,22 @@ fn main() -> io::Result<()> {
 
     for j in (0..IMAGE_HEIGHT).rev() {
         for i in 0..IMAGE_WIDTH {
-            let u = i as f64 / (IMAGE_WIDTH - 1) as f64;
-            let v = j as f64 / (IMAGE_HEIGHT - 1) as f64;
-            let r = camera.get_ray(u, v);
+            let mut pixel_color = Vec3::new(0.0, 0.0, 0.0);
 
-            let c = ray_color(&r, &mut world);
-            write!(f, "{}\n", c)?;
+            for _ in 0..SAMPLES_PER_PIXEL {
+                let u_delta = uniform_gen.sample(&mut rng);
+                let v_delta = uniform_gen.sample(&mut rng);
+
+                let u = (i as f64 + u_delta) / (IMAGE_WIDTH - 1) as f64;
+                let v = (j as f64 + v_delta) / (IMAGE_HEIGHT - 1) as f64;
+                let r = camera.get_ray(u, v);
+
+                let c: Vec3 = ray_color(&r, &mut world).into();
+
+                pixel_color += c;
+            }
+            pixel_color /= SAMPLES_PER_PIXEL as f64;
+            write!(f, "{}\n", Color::from(pixel_color))?;
         }
     }
 

@@ -2236,6 +2236,7 @@ name = "raytracing"
 version = "0.1.0"
 dependencies = [
  "float-cmp",
+ "rand 0.8.3",
 ]
 
 [[package]]

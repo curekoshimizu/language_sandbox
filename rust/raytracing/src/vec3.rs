@@ -1,5 +1,8 @@
+use crate::color::Color;
 use float_cmp::{ApproxEq, F64Margin};
+use std::ops::Deref;
 use std::ops::{Add, Div, Mul, Neg, Sub};
+use std::ops::{AddAssign, DivAssign, MulAssign, SubAssign};
 
 #[derive(PartialEq, Debug, Clone)]
 pub struct Vec3 {
@@ -76,7 +79,13 @@ impl ApproxEq for Vec3 {
     }
 }
 
-macro_rules! forward_ref_binop {
+impl From<Color> for Vec3 {
+    fn from(c: Color) -> Self {
+        c.deref().clone()
+    }
+}
+
+macro_rules! implement_binop {
     ($imp:ident, $method:ident) => {
         impl $imp<Vec3> for Vec3 {
             type Output = Vec3;
@@ -130,10 +139,47 @@ macro_rules! forward_ref_binop {
     };
 }
 
-forward_ref_binop! {Add, add}
-forward_ref_binop! {Sub, sub}
-forward_ref_binop! {Mul, mul}
-forward_ref_binop! {Div, div}
+macro_rules! implement_assignop {
+    ($imp:ident, $method:ident, $term:tt) => {
+        impl $imp<Vec3> for Vec3 {
+            fn $method(&mut self, rhs: Self) {
+                *self = Self {
+                    x: self.x $term rhs.x,
+                    y: self.y $term rhs.y,
+                    z: self.z $term rhs.z,
+                };
+            }
+        }
+        impl<'a> $imp<&'a Vec3> for Vec3 {
+            fn $method(&mut self, rhs: &'a Vec3) {
+                *self = Self {
+                    x: self.x $term rhs.x,
+                    y: self.y $term rhs.y,
+                    z: self.z $term rhs.z,
+                };
+            }
+        }
+        impl $imp<f64> for Vec3 {
+            fn $method(&mut self, rhs: f64) {
+                *self = Self {
+                    x: self.x $term rhs,
+                    y: self.y $term rhs,
+                    z: self.z $term rhs,
+                };
+            }
+        }
+    };
+}
+
+implement_binop! {Add, add}
+implement_binop! {Sub, sub}
+implement_binop! {Mul, mul}
+implement_binop! {Div, div}
+
+implement_assignop! {AddAssign, add_assign, +}
+implement_assignop! {SubAssign, sub_assign, -}
+implement_assignop! {MulAssign, mul_assign, *}
+implement_assignop! {DivAssign, div_assign, /}
 
 impl Neg for Vec3 {
     type Output = Vec3;
