@@ -1,6 +1,7 @@
 use crate::color::Color;
 use crate::hittable::HitStatus;
 use crate::rand::BallUniform;
+use crate::rand::RandUniform;
 use crate::rand::SphereUniform;
 use crate::ray::Ray;
 use crate::vec3::Vec3;
@@ -79,12 +80,22 @@ impl Material for Metal {
 }
 
 pub struct Dielectric {
+    rand_unitform: RandUniform,
     index_refraction: f64,
 }
 
 impl Dielectric {
     pub fn new(index_refraction: f64) -> Self {
-        Dielectric { index_refraction }
+        Dielectric {
+            rand_unitform: RandUniform::new(),
+            index_refraction,
+        }
+    }
+
+    fn reflectance(cosine: f64, ref_idx: f64) -> f64 {
+        let mut r0 = (1.0 - ref_idx) / (1.0 + ref_idx);
+        r0 = r0 * r0;
+        r0 + (1.0 - r0) * (1.0 - cosine).powf(5.0)
     }
 }
 
@@ -106,7 +117,8 @@ impl Material for Dielectric {
         let cannot_refract = refraction_ratio * sin_theta > 1.0;
 
         let direction: Vec3;
-        if cannot_refract {
+        let random_double = self.rand_unitform.gen() * 2.0 - 1.0;
+        if cannot_refract || Dielectric::reflectance(cos_theta, refraction_ratio) > random_double {
             direction = unit_direction.reflect(&hit_info.outward_normal)
         } else {
             direction = unit_direction.refract(&hit_info.outward_normal, refraction_ratio);
