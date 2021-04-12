@@ -5,6 +5,7 @@ mod sphere;
 mod vec3;
 mod world;
 
+use crate::hittable::Hittable;
 use color::Color;
 use ray::Ray;
 use sphere::Sphere;
@@ -15,36 +16,19 @@ use std::io::Write;
 use vec3::{Point3, Vec3};
 use world::World;
 
-fn hit_sphere(ray: &Ray, center: &Point3, radius: f64) -> f64 {
-    // NOTE:
-    //  || (O + tD) - C ||^2 = r^2
-    //  t^2 || D ||^2 - 2t (O-C, D) + || O-C ||^2 - r^2 = 0
-    let oc = &ray.origin - center;
-    let a = ray.direction.dot(&ray.direction);
-    let b = oc.dot(&ray.direction);
-    let c = oc.dot(&oc) - radius * radius;
-
-    let discriminant = b * b - a * c;
-    if discriminant < 0.0 {
-        -1.0
-    } else {
-        (-b - discriminant.sqrt()) / a
-    }
-}
-
 fn ray_color(ray: &Ray, world: &mut World) -> Color {
-    let t = hit_sphere(&ray, &Point3::new(0.0, 0.0, -1.0), 0.5);
-    if t > 0.0 {
-        let normal = ray.at(t) - Vec3::new(0.0, 0.0, -1.0);
-        return Color::from(0.5 * (normal + 1.0));
+    if let Some(hash_info) = world.hit(&ray, 0.0, f64::INFINITY) {
+        Color::from(0.5 * (hash_info.outward_normal + 1.0))
+    } else {
+        // render sky
+
+        let unit_direction: Vec3 = ray.direction.unit_vector();
+
+        // unit_direction.y in [-1, 1] => t in [0, 1]
+        let t = 0.5 * (unit_direction.y + 1.0);
+
+        ((1.0 - t) * Vec3::new(1.0, 1.0, 1.0) + t * Vec3::new(0.5, 0.7, 1.0)).into()
     }
-
-    let unit_direction: Vec3 = ray.direction.unit_vector();
-
-    // unit_direction.y in [-1, 1] => t in [0, 1]
-    let t = 0.5 * (unit_direction.y + 1.0);
-
-    ((1.0 - t) * Vec3::new(1.0, 1.0, 1.0) + t * Vec3::new(0.5, 0.7, 1.0)).into()
 }
 
 // Image

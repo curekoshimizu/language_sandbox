@@ -65,6 +65,7 @@ mod tests {
     #[test]
     fn hit() {
         let ray = Ray::new(Point3::new(0.0, 0.0, 0.0), Vec3::new(0.0, 0.0, -1.0));
+
         let mut sphere = Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5);
 
         assert!(sphere.hit(&ray, 0.0, f64::INFINITY).is_some());
