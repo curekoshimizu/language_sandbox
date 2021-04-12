@@ -52,6 +52,7 @@ fn main() -> io::Result<()> {
         let uniform_gen = Uniform::from(0.0..1.0);
         let mut rng = thread_rng();
         let rand_val = uniform_gen.sample(&mut rng);
+
         for _ in 0..IMAGE_HEIGHT * IMAGE_WIDTH * SAMPLES_PER_PIXEL * 2 {
             rand_tx.send(rand_val).unwrap();
         }
