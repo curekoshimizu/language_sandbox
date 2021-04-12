@@ -10,19 +10,28 @@ use std::io::BufWriter;
 use std::io::Write;
 use vec3::{Point3, Vec3};
 
-fn hit_sphere(ray: &Ray, center: &Point3, radius: f64) -> bool {
+fn hit_sphere(ray: &Ray, center: &Point3, radius: f64) -> f64 {
+    // NOTE:
+    //  || (O + tD) - C ||^2 = r^2
+    //  t^2 || D ||^2 - 2t (O-C, D) + || O-C ||^2 - r^2 = 0
     let oc = &ray.origin - center;
     let a = ray.direction.dot(&ray.direction);
-    let b = 2.0 * oc.dot(&ray.direction);
+    let b = oc.dot(&ray.direction);
     let c = oc.dot(&oc) - radius * radius;
 
-    let discriminant = b * b - 4.0 * a * c;
-    discriminant > 0.0
+    let discriminant = b * b - a * c;
+    if discriminant < 0.0 {
+        -1.0
+    } else {
+        (-b - discriminant.sqrt()) / a
+    }
 }
 
 fn ray_coloro(ray: &Ray) -> Color {
-    if hit_sphere(&ray, &Point3::new(0.0, 0.0, -1.0), 0.5) {
-        return Color::new(1.0, 0.0, 0.0);
+    let t = hit_sphere(&ray, &Point3::new(0.0, 0.0, -1.0), 0.5);
+    if t > 0.0 {
+        let normal = ray.at(t) - Vec3::new(0.0, 0.0, -1.0);
+        return Color::from(0.5 * (normal + 1.0));
     }
 
     let unit_direction: Vec3 = ray.direction.unit_vector();
