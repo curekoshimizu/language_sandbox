@@ -8,7 +8,7 @@ pub struct Vec3 {
     pub z: f64,
 }
 
-type Point3 = Vec3;
+pub type Point3 = Vec3;
 
 impl Vec3 {
     pub fn new(x: f64, y: f64, z: f64) -> Self {
@@ -79,6 +79,20 @@ impl Add for Vec3 {
     type Output = Vec3;
     fn add(self, rhs: Vec3) -> Self::Output {
         <Vec3>::add(&self, &rhs)
+    }
+}
+
+impl<'a> Add<&'a Vec3> for Vec3 {
+    type Output = Vec3;
+    fn add(self, rhs: &Vec3) -> Self::Output {
+        <Vec3>::add(&self, rhs)
+    }
+}
+
+impl<'a> Add<Vec3> for &'a Vec3 {
+    type Output = Vec3;
+    fn add(self, rhs: Vec3) -> Self::Output {
+        <Vec3>::add(self, &rhs)
     }
 }
 
@@ -156,6 +170,7 @@ impl<'a> Neg for &'a Vec3 {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use float_cmp::approx_eq;
 
     #[test]
     fn add() {

@@ -46,6 +46,7 @@ impl ApproxEq for Color {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use float_cmp::approx_eq;
 
     #[test]
     fn add() {
