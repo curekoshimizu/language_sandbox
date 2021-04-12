@@ -1,5 +1,5 @@
+use crate::hittable::Hittable;
 use crate::ray::Ray;
-use crate::sphere::Hittable; // TODO: move
 
 pub struct World {
     objects: Vec<Box<dyn Hittable>>,

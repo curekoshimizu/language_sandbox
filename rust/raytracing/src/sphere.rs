@@ -1,9 +1,6 @@
+use crate::hittable::Hittable;
 use crate::ray::Ray;
 use crate::vec3::{Point3, Vec3};
-
-pub trait Hittable {
-    fn hit(&mut self, ray: &Ray, t_min: f64, t_max: f64) -> bool;
-}
 
 pub struct Sphere {
     center: Point3,
@@ -54,5 +51,28 @@ impl Hittable for Sphere {
         let _outward_normal = self.set_face_normal(ray, &_normal);
 
         true
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn hit() {
+        let ray = Ray::new(Point3::new(0.0, 0.0, 0.0), Vec3::new(0.0, 0.0, -1.0));
+
+        let mut sphere = Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5);
+
+        assert!(sphere.hit(&ray, 0.0, f64::INFINITY));
+    }
+
+    #[test]
+    fn no_hit() {
+        let ray = Ray::new(Point3::new(0.0, 0.0, 0.0), Vec3::new(0.0, 0.8, -1.0));
+
+        let mut sphere = Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5);
+
+        assert!(!sphere.hit(&ray, 0.0, f64::INFINITY));
     }
 }

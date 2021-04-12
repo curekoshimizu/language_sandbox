@@ -1,4 +1,5 @@
 mod color;
+mod hittable;
 mod ray;
 mod sphere;
 mod vec3;
@@ -64,7 +65,7 @@ fn main() -> io::Result<()> {
         &origin - &horizontal / 2.0 - &vertical / 2.0 - Vec3::new(0.0, 0.0, FOCAL_LENGTH);
 
     let mut world = World::new();
-    world.push(Box::new(Sphere::new(Point3::new(0.0, 0.0, 0.1), 0.5)));
+    world.push(Box::new(Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5)));
     world.push(Box::new(Sphere::new(Point3::new(0.0, -100.5, -1.0), 100.0)));
 
     // render
