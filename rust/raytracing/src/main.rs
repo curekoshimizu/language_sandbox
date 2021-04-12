@@ -27,7 +27,7 @@ fn ray_color(ray: Ray, world: &mut World, rand_ball: &mut rand::BallUniform) -> 
     let mut cur_attenuation = 1.0;
 
     for _ in 0..MAX_DEPTH {
-        if let Some(hash_info) = world.hit(&cur_ray, 0.0, f64::INFINITY) {
+        if let Some(hash_info) = world.hit(&cur_ray, 0.001, f64::INFINITY) {
             let direction: Vec3 = &hash_info.outward_normal + rand_ball.gen_vec3();
 
             cur_attenuation *= 0.5;
