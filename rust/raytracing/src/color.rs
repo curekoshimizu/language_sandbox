@@ -63,6 +63,6 @@ mod tests {
     #[test]
     fn display() {
         let color = Color::new(0.0, 0.5, 1.0);
-        assert_eq!(format!("Color({})", color), "Color(0 127 255)");
+        assert_eq!(format!("Color({})", color), "Color(0 181 255)");
     }
 }
