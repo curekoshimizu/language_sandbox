@@ -2,14 +2,17 @@ mod color;
 mod ray;
 mod sphere;
 mod vec3;
+mod world;
 
 use color::Color;
 use ray::Ray;
+use sphere::Sphere;
 use std::fs::File;
 use std::io;
 use std::io::BufWriter;
 use std::io::Write;
 use vec3::{Point3, Vec3};
+use world::World;
 
 fn hit_sphere(ray: &Ray, center: &Point3, radius: f64) -> f64 {
     // NOTE:
@@ -28,7 +31,7 @@ fn hit_sphere(ray: &Ray, center: &Point3, radius: f64) -> f64 {
     }
 }
 
-fn ray_coloro(ray: &Ray) -> Color {
+fn ray_color(ray: &Ray, world: &mut World) -> Color {
     let t = hit_sphere(&ray, &Point3::new(0.0, 0.0, -1.0), 0.5);
     if t > 0.0 {
         let normal = ray.at(t) - Vec3::new(0.0, 0.0, -1.0);
@@ -60,8 +63,11 @@ fn main() -> io::Result<()> {
     let lower_left_cornerl =
         &origin - &horizontal / 2.0 - &vertical / 2.0 - Vec3::new(0.0, 0.0, FOCAL_LENGTH);
 
-    // render
+    let mut world = World::new();
+    world.push(Box::new(Sphere::new(Point3::new(0.0, 0.0, 0.1), 0.5)));
+    world.push(Box::new(Sphere::new(Point3::new(0.0, -100.5, -1.0), 100.0)));
 
+    // render
     let mut f = BufWriter::new(File::create("image.ppm")?);
 
     write!(f, "P3\n")?;
@@ -77,7 +83,7 @@ fn main() -> io::Result<()> {
                 &lower_left_cornerl + u * &horizontal + v * &vertical - &origin,
             );
 
-            let c = ray_coloro(&r);
+            let c = ray_color(&r, &mut world);
             write!(f, "{}\n", c)?;
         }
     }
