@@ -228,14 +228,6 @@ mod tests {
         let b = Vec3::new(0.0, 1.0, 2.0);
         assert!(approx_eq!(Vec3, &a + &b, Vec3::new(1.0, 2.0, 3.0)));
         assert!(approx_eq!(Vec3, a + b, Vec3::new(1.0, 2.0, 3.0)));
-    }
-
-    #[test]
-    fn sub() {
-        let a = Vec3::new(1.0, 1.0, 1.0);
-        let b = Vec3::new(0.0, 1.0, 2.0);
-        assert!(approx_eq!(Vec3, &a - &b, Vec3::new(1.0, 0.0, -1.0)));
-        assert!(approx_eq!(Vec3, a - b, Vec3::new(1.0, 0.0, -1.0)));
 
         assert!(approx_eq!(
             Vec3,
@@ -280,6 +272,14 @@ mod tests {
     }
 
     #[test]
+    fn sub() {
+        let a = Vec3::new(1.0, 1.0, 1.0);
+        let b = Vec3::new(0.0, 1.0, 2.0);
+        assert!(approx_eq!(Vec3, &a - &b, Vec3::new(1.0, 0.0, -1.0)));
+        assert!(approx_eq!(Vec3, a - b, Vec3::new(1.0, 0.0, -1.0)));
+    }
+
+    #[test]
     fn mul() {
         let a = Vec3::new(1.0, 1.0, 1.0);
         let b = Vec3::new(0.0, 1.0, 2.0);
@@ -293,6 +293,46 @@ mod tests {
         let a = Vec3::new(1.0, 2.0, 1.0);
         assert!(approx_eq!(Vec3, &b / &a, Vec3::new(0.0, 0.5, 2.0)));
         assert!(approx_eq!(Vec3, b / a, Vec3::new(0.0, 0.5, 2.0)));
+    }
+
+    #[test]
+    fn add_assign() {
+        let mut a = Vec3::new(1.0, 2.0, 3.0);
+        a += Vec3::new(-1.0, -1.0, -1.0);
+        let mut b = a.clone();
+        assert!(approx_eq!(Vec3, a, Vec3::new(0.0, 1.0, 2.0)));
+        b += 3.0;
+        assert!(approx_eq!(Vec3, b, Vec3::new(3.0, 4.0, 5.0)));
+    }
+
+    #[test]
+    fn sub_assign() {
+        let mut a = Vec3::new(1.0, 2.0, 3.0);
+        a -= Vec3::new(-1.0, -1.0, -1.0);
+        let mut b = a.clone();
+        assert!(approx_eq!(Vec3, a, Vec3::new(2.0, 3.0, 4.0)));
+        b -= 3.0;
+        assert!(approx_eq!(Vec3, b, Vec3::new(-1.0, 0.0, 1.0)));
+    }
+
+    #[test]
+    fn mul_assign() {
+        let mut a = Vec3::new(1.0, 2.0, 3.0);
+        a *= Vec3::new(-1.0, -1.0, -1.0);
+        let mut b = a.clone();
+        assert!(approx_eq!(Vec3, a, Vec3::new(-1.0, -2.0, -3.0)));
+        b *= 3.0;
+        assert!(approx_eq!(Vec3, b, Vec3::new(-3.0, -6.0, -9.0)));
+    }
+
+    #[test]
+    fn div_assign() {
+        let mut a = Vec3::new(1.0, 2.0, 3.0);
+        a /= Vec3::new(-1.0, -1.0, -1.0);
+        let mut b = a.clone();
+        assert!(approx_eq!(Vec3, a, Vec3::new(-1.0, -2.0, -3.0)));
+        b /= 3.0;
+        assert!(approx_eq!(Vec3, b, Vec3::new(-1.0 / 3.0, -2.0 / 3.0, -1.0)));
     }
 
     #[test]
