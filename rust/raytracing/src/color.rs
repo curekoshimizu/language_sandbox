@@ -1,3 +1,4 @@
+use crate::rand::RandUniform;
 use crate::vec3::Vec3;
 use float_cmp::{ApproxEq, F64Margin};
 use std::fmt;
@@ -18,6 +19,10 @@ impl Deref for Color {
 impl Color {
     pub fn new(x: f64, y: f64, z: f64) -> Self {
         Color(Vec3::new(x, y, z))
+    }
+    pub fn random() -> Self {
+        let uniform = RandUniform::new();
+        Color(Vec3::new(uniform.gen(), uniform.gen(), uniform.gen()))
     }
 }
 
