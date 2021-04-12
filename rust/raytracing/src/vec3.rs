@@ -15,10 +15,10 @@ impl Vec3 {
         Vec3 { x: x, y: y, z: z }
     }
     pub fn length(&self) -> f64 {
-        (self.x * self.x + self.y * self.y + self.z * self.z).sqrt()
+        self.dot(self).sqrt()
     }
-    pub fn length_squareed(&self) -> f64 {
-        self.x * self.x + self.y * self.y + self.z * self.z
+    pub fn length_squared(&self) -> f64 {
+        self.dot(self)
     }
     pub fn dot(&self, rhs: &Vec3) -> f64 {
         let v = self * rhs;
@@ -246,14 +246,14 @@ mod tests {
     fn len() {
         let a = Vec3::new(0.0, 1.0, 2.0);
         approx_eq!(f64, a.length(), 5.0_f64.sqrt());
-        approx_eq!(f64, a.length_squareed(), 5.0);
+        approx_eq!(f64, a.length_squared(), 5.0);
     }
 
     #[test]
     fn dot() {
         let a = Vec3::new(0.0, 1.0, 2.0);
         let b = Vec3::new(1.0, 1.0, 1.0);
-        approx_eq!(Vec3, a.dot(&b), 5.0)
+        approx_eq!(f64, a.dot(&b), 5.0);
     }
 
     #[test]
