@@ -3,7 +3,8 @@ use float_cmp::{ApproxEq, F64Margin};
 use std::fmt;
 use std::ops::Deref;
 
-pub struct Color(Vec3);
+#[derive(Clone)]
+pub struct Color(pub Vec3);
 
 impl Deref for Color {
     type Target = Vec3;

@@ -1,3 +1,4 @@
+use crate::color::Color;
 use crate::hittable::{HitInfo, HitStatus, Hittable};
 use crate::material::{Lambertian, Material};
 use crate::ray::Ray;
@@ -72,7 +73,7 @@ mod tests {
     fn hit() {
         let ray = Ray::new(Point3::new(0.0, 0.0, 0.0), Vec3::new(0.0, 0.0, -1.0));
 
-        let material = Box::new(Lambertian::new());
+        let material = Box::new(Lambertian::new(Color::new(1.0, 1.0, 1.0)));
         let mut sphere = Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5, material);
 
         assert!(sphere.hit(&ray, 0.0, f64::INFINITY).is_some());
@@ -82,7 +83,7 @@ mod tests {
     fn no_hit() {
         let ray = Ray::new(Point3::new(0.0, 0.0, 0.0), Vec3::new(0.0, 0.8, -1.0));
 
-        let material = Box::new(Lambertian::new());
+        let material = Box::new(Lambertian::new(Color::new(1.0, 1.0, 1.0)));
         let mut sphere = Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5, material);
 
         assert!(sphere.hit(&ray, 0.0, f64::INFINITY).is_none());
