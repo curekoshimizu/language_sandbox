@@ -77,7 +77,7 @@ impl ApproxEq for Vec3 {
 
 macro_rules! forward_ref_binop {
     ($imp:ident, $method:ident) => {
-        impl $imp for Vec3 {
+        impl $imp<Vec3> for Vec3 {
             type Output = Vec3;
             fn $method(self, rhs: Vec3) -> Self::Output {
                 <Vec3>::$method(&self, &rhs)
@@ -99,6 +99,31 @@ macro_rules! forward_ref_binop {
             type Output = Vec3;
             fn $method(self, rhs: &'b Vec3) -> Vec3 {
                 <Vec3>::$method(self, rhs)
+            }
+        }
+
+        impl $imp<f64> for Vec3 {
+            type Output = Vec3;
+            fn $method(self, rhs: f64) -> Self::Output {
+                <Vec3>::$method(&self, &Vec3::new(rhs, rhs, rhs))
+            }
+        }
+        impl<'a> $imp<f64> for &'a Vec3 {
+            type Output = Vec3;
+            fn $method(self, rhs: f64) -> Self::Output {
+                <Vec3>::$method(self, &Vec3::new(rhs, rhs, rhs))
+            }
+        }
+        impl $imp<Vec3> for f64 {
+            type Output = Vec3;
+            fn $method(self, rhs: Vec3) -> Self::Output {
+                <Vec3>::$method(&Vec3::new(self, self, self), &rhs)
+            }
+        }
+        impl<'a> $imp<&'a Vec3> for f64 {
+            type Output = Vec3;
+            fn $method(self, rhs: &Vec3) -> Self::Output {
+                <Vec3>::$method(&Vec3::new(self, self, self), rhs)
             }
         }
     };
@@ -150,6 +175,47 @@ mod tests {
         let b = Vec3::new(0.0, 1.0, 2.0);
         approx_eq!(Vec3, &a - &b, Vec3::new(1.0, 0.0, -1.0));
         approx_eq!(Vec3, a - b, Vec3::new(1.0, 0.0, -1.0));
+
+        approx_eq!(
+            Vec3,
+            Vec3::new(0.0, 1.0, 2.0) + Vec3::new(1.0, 1.0, 1.0),
+            Vec3::new(1.0, 2.0, 3.0)
+        );
+        approx_eq!(
+            Vec3,
+            Vec3::new(0.0, 1.0, 2.0) + &Vec3::new(1.0, 1.0, 1.0),
+            Vec3::new(1.0, 2.0, 3.0)
+        );
+        approx_eq!(
+            Vec3,
+            &Vec3::new(0.0, 1.0, 2.0) + Vec3::new(1.0, 1.0, 1.0),
+            Vec3::new(1.0, 2.0, 3.0)
+        );
+        approx_eq!(
+            Vec3,
+            &Vec3::new(0.0, 1.0, 2.0) + &Vec3::new(1.0, 1.0, 1.0),
+            Vec3::new(1.0, 2.0, 3.0)
+        );
+        approx_eq!(
+            Vec3,
+            Vec3::new(0.0, 1.0, 2.0) + 1.0,
+            Vec3::new(1.0, 2.0, 3.0)
+        );
+        approx_eq!(
+            Vec3,
+            &Vec3::new(0.0, 1.0, 2.0) + 1.0,
+            Vec3::new(1.0, 2.0, 3.0)
+        );
+        approx_eq!(
+            Vec3,
+            1.0 + Vec3::new(0.0, 1.0, 2.0),
+            Vec3::new(1.0, 2.0, 3.0)
+        );
+        approx_eq!(
+            Vec3,
+            1.0 + &Vec3::new(0.0, 1.0, 2.0),
+            Vec3::new(1.0, 2.0, 3.0)
+        );
     }
 
     #[test]
