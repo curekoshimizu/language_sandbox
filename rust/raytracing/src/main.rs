@@ -29,14 +29,13 @@ fn ray_color(ray: Ray, world: &mut World) -> Color {
     let mut cur_attenuation = 1.0;
 
     for _ in 0..MAX_DEPTH {
-        if let Some(hash_info) = world.hit(&cur_ray, 0.001, f64::INFINITY) {
-            // TODO: implement
-            assert!(false);
-            // let direction: Vec3 = &hash_info.outward_normal + rand_ball.gen_vec3();
-            //
-            // cur_attenuation *= 0.5;
-            //
-            // cur_ray = Ray::new(hash_info.point, direction);
+        if let Some(mut hit_info) = world.hit(&cur_ray, 0.001, f64::INFINITY) {
+            if let Some(scattered) = hit_info.scatter(&cur_ray) {
+                cur_attenuation *= 0.5;
+                cur_ray = scattered;
+            } else {
+                assert!(false);
+            }
         } else {
             // render sky
 

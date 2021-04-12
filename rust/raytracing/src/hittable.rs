@@ -2,10 +2,21 @@ use crate::material::Material;
 use crate::ray::Ray;
 use crate::vec3::{Point3, Vec3};
 
-pub struct HitInfo {
+pub struct HitStatus {
     pub point: Point3,
     pub outward_normal: Vec3,
     pub t: f64,
+}
+
+pub struct HitInfo<'a> {
+    pub hit_status: HitStatus,
+    pub material: &'a mut Box<dyn Material>,
+}
+
+impl<'a> HitInfo<'a> {
+    pub fn scatter(&mut self, ray: &Ray) -> Option<Ray> {
+        self.material.scatter(ray, &self.hit_status)
+    }
 }
 
 pub trait Hittable {
