@@ -12,4 +12,5 @@ members = [
     "async_file_io",
     "web_server",
     "grpc",
+    "raytracing",
 ]
