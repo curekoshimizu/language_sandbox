@@ -1,5 +1,6 @@
 mod color;
 mod ray;
+mod sphere;
 mod vec3;
 
 use color::Color;
