@@ -8,7 +8,7 @@ pub struct Vec3 {
     pub z: f64,
 }
 
-pub struct Point3(Vec3);
+type Point3 = Vec3;
 
 impl Vec3 {
     pub fn new(x: f64, y: f64, z: f64) -> Self {
@@ -34,6 +34,34 @@ impl Vec3 {
         let len = self.length();
         self / &Vec3::new(len, len, len)
     }
+    pub fn add(&self, rhs: &Vec3) -> Vec3 {
+        Vec3 {
+            x: self.x + rhs.x,
+            y: self.y + rhs.y,
+            z: self.z + rhs.z,
+        }
+    }
+    pub fn sub(&self, rhs: &Vec3) -> Vec3 {
+        Vec3 {
+            x: self.x - rhs.x,
+            y: self.y - rhs.y,
+            z: self.z - rhs.z,
+        }
+    }
+    fn mul(&self, rhs: &Vec3) -> Vec3 {
+        Vec3 {
+            x: self.x * rhs.x,
+            y: self.y * rhs.y,
+            z: self.z * rhs.z,
+        }
+    }
+    fn div(&self, rhs: &Vec3) -> Vec3 {
+        Vec3 {
+            x: self.x / rhs.x,
+            y: self.y / rhs.y,
+            z: self.z / rhs.z,
+        }
+    }
 }
 
 impl ApproxEq for Vec3 {
@@ -50,88 +78,56 @@ impl ApproxEq for Vec3 {
 impl Add for Vec3 {
     type Output = Vec3;
     fn add(self, rhs: Vec3) -> Self::Output {
-        Vec3 {
-            x: self.x + rhs.x,
-            y: self.y + rhs.y,
-            z: self.z + rhs.z,
-        }
+        <Vec3>::add(&self, &rhs)
     }
 }
 
 impl<'a, 'b> Add<&'b Vec3> for &'a Vec3 {
     type Output = Vec3;
-    fn add(self, other: &'b Vec3) -> Vec3 {
-        Vec3 {
-            x: self.x + other.x,
-            y: self.y + other.y,
-            z: self.y + other.z,
-        }
+    fn add(self, rhs: &'b Vec3) -> Vec3 {
+        self.add(rhs)
     }
 }
 
 impl Sub for Vec3 {
     type Output = Vec3;
     fn sub(self, rhs: Vec3) -> Self::Output {
-        Vec3 {
-            x: self.x - rhs.x,
-            y: self.y - rhs.y,
-            z: self.z - rhs.z,
-        }
+        <Vec3>::sub(&self, &rhs)
     }
 }
 
 impl<'a, 'b> Sub<&'b Vec3> for &'a Vec3 {
     type Output = Vec3;
-    fn sub(self, other: &'b Vec3) -> Vec3 {
-        Vec3 {
-            x: self.x - other.x,
-            y: self.y - other.y,
-            z: self.y - other.z,
-        }
+    fn sub(self, rhs: &'b Vec3) -> Vec3 {
+        self.sub(rhs)
     }
 }
 
 impl Mul for Vec3 {
     type Output = Vec3;
     fn mul(self, rhs: Vec3) -> Self::Output {
-        Vec3 {
-            x: self.x * rhs.x,
-            y: self.y * rhs.y,
-            z: self.z * rhs.z,
-        }
+        <Vec3>::mul(&self, &rhs)
     }
 }
 
 impl<'a, 'b> Mul<&'b Vec3> for &'a Vec3 {
     type Output = Vec3;
-    fn mul(self, other: &'b Vec3) -> Vec3 {
-        Vec3 {
-            x: self.x * other.x,
-            y: self.y * other.y,
-            z: self.y * other.z,
-        }
+    fn mul(self, rhs: &'b Vec3) -> Vec3 {
+        self.mul(rhs)
     }
 }
 
 impl Div for Vec3 {
     type Output = Vec3;
     fn div(self, rhs: Vec3) -> Self::Output {
-        Vec3 {
-            x: self.x / rhs.x,
-            y: self.y / rhs.y,
-            z: self.z / rhs.z,
-        }
+        <Vec3>::div(&self, &rhs)
     }
 }
 
 impl<'a, 'b> Div<&'b Vec3> for &'a Vec3 {
     type Output = Vec3;
-    fn div(self, other: &'b Vec3) -> Vec3 {
-        Vec3 {
-            x: self.x / other.x,
-            y: self.y / other.y,
-            z: self.y / other.z,
-        }
+    fn div(self, rhs: &'b Vec3) -> Vec3 {
+        self.div(rhs)
     }
 }
 
