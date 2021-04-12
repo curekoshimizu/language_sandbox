@@ -20,18 +20,19 @@ use std::io::Write;
 use vec3::{Point3, Vec3};
 use world::World;
 
-fn ray_color(ray: Ray, world: &mut World) -> Color {
+const MAX_DEPTH: usize = 50;
+
+fn ray_color(ray: Ray, world: &mut World, rand_ball: &mut rand::BallUniform) -> Color {
     let mut cur_ray = ray;
     let mut cur_attenuation = 1.0;
 
-    for _ in 0..50 {
+    for _ in 0..MAX_DEPTH {
         if let Some(hash_info) = world.hit(&cur_ray, 0.0, f64::INFINITY) {
-            let target: Vec3 = &hash_info.point + &hash_info.outward_normal; // TODO: add unit_sphere
+            let direction: Vec3 = &hash_info.outward_normal + rand_ball.gen_vec3();
 
             cur_attenuation *= 0.5;
 
-            let sub: Vec3 = target + &hash_info.point;
-            cur_ray = Ray::new(hash_info.point, sub);
+            cur_ray = Ray::new(hash_info.point, direction);
         } else {
             // render sky
 
@@ -73,6 +74,7 @@ fn main() -> io::Result<()> {
         .par_iter()
         .map(|&j| {
             let mut rand_uniform = rand::RandUniform::new();
+            let mut rand_ball = rand::BallUniform::new();
             let camera = Camera::new(ASPECT_RATIO);
 
             let mut world = World::new();
@@ -91,7 +93,7 @@ fn main() -> io::Result<()> {
                         let v = (j as f64 + v_delta) / (IMAGE_HEIGHT - 1) as f64;
                         let r = camera.get_ray(u, v);
 
-                        let c: Vec3 = ray_color(r, &mut world).into();
+                        let c: Vec3 = ray_color(r, &mut world, &mut rand_ball).into();
                         pixel_color += c;
                     }
                     pixel_color /= SAMPLES_PER_PIXEL as f64;

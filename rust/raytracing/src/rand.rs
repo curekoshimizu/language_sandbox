@@ -1,3 +1,4 @@
+use crate::vec3::Vec3;
 use rand::distributions::{Distribution, Uniform};
 use rand::rngs::ThreadRng;
 use rand::thread_rng;
@@ -38,6 +39,11 @@ impl BallUniform {
             radius * sin_theta * phi.sin(),
             radius * cos_theta,
         )
+    }
+
+    pub fn gen_vec3(&mut self) -> Vec3 {
+        let (x, y, z) = self.gen();
+        Vec3::new(x, y, z)
     }
 }
 
