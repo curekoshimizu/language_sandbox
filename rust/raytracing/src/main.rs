@@ -12,6 +12,7 @@ mod world;
 use crate::degree::Degree;
 use crate::hittable::Hittable;
 use crate::material::{Dielectric, Lambertian, Metal};
+use crate::rand::RandUniform;
 use camera::Camera;
 use color::Color;
 use ray::Ray;
@@ -55,13 +56,82 @@ fn ray_color(ray: Ray, world: &mut World) -> Color {
 }
 
 // Image
-const ASPECT_RATIO: f64 = 16.0 / 9.0;
-const IMAGE_WIDTH: usize = 400;
+const ASPECT_RATIO: f64 = 3.0 / 2.0;
+const IMAGE_WIDTH: usize = 1200;
 const IMAGE_HEIGHT: usize = (IMAGE_WIDTH as f64 / ASPECT_RATIO) as usize;
 
-const SAMPLES_PER_PIXEL: usize = 100;
+const SAMPLES_PER_PIXEL: usize = 500;
+
+fn random_scene() -> World {
+    let world = World::new();
+
+    world.push(Box::new(Sphere::new(
+        Point3::new(0.0, -1000.0, 0.0),
+        1000.0,
+        Box::new(Lambertian::new(Color::new(0.5, 0.5, 0.5))),
+    )));
+
+    let uniform = RandUniform::new();
+
+    for a in -11..11 {
+        for b in -11..11 {
+            let choose_mat = uniform.gen();
+            let center = Point3::new(
+                a as f64 + 0.9 * uniform.gen(),
+                0.2,
+                b as f64 + 0.9 * uniform.gen(),
+            );
+
+            if (center - Point3::new(4.0, 0.2, 0.0)).length() > 0.9 {
+                if choose_mat < 0.8 {
+                    // diffuse
+                    let albedo = Color::random() * Color::random();
+                    world.push(Box::new(Sphere::new(
+                        center,
+                        0.2,
+                        Box::new(Lambertian::new(albedo)),
+                    )));
+                } else if choose_mat < 0.95 {
+                    // metal
+                    let albedo = Color::random(); // TODO:
+                    world.push(Box::new(Sphere::new(
+                        center,
+                        0.2,
+                        Box::new(Metal::new(albedo, uniform.gen() / 10.0)),
+                    )));
+                } else {
+                    // glass
+                    world.push(Box::new(Sphere::new(
+                        center,
+                        0.2,
+                        Box::new(Dielectric::new(1.5)),
+                    )));
+                }
+            }
+        }
+    }
+
+    world.push(Box::new(Sphere::new(
+        Point3::new(0.0, 1.0, 0.0),
+        1.0,
+        Box::new(Dielectric::new(1.5)),
+    )));
+    world.push(Box::new(Sphere::new(
+        Point3::new(-4.0, 1.0, 0.0),
+        1.0,
+        Box::new(Lambertian::new(Color::new(0.4, 0.2, 0.1))),
+    )));
+    world.push(Box::new(Sphere::new(
+        Point3::new(4.0, 1.0, 0.0),
+        1.0,
+        Box::new(Metal::new(Color::new(0.7, 0.6, 0.5), 0.0)),
+    )));
+
+    world
+}
 
 fn main() -> io::Result<()> {
+    let world_gen = random_scene();
     // render
     let mut f = BufWriter::new(File::create("image.ppm")?);
 
@@ -93,34 +163,7 @@ fn main() -> io::Result<()> {
                 dist_to_focus,
             );
 
-            let mut world = World::new();
-
-            world.push(Box::new(Sphere::new(
-                Point3::new(0.0, -100.5, -1.0),
-                100.0,
-                Box::new(Lambertian::new(Color::new(0.8, 0.8, 0.0))),
-            )));
-            world.push(Box::new(Sphere::new(
-                Point3::new(0.0, 0.0, -1.0),
-                0.5,
-                Box::new(Lambertian::new(Color::new(0.1, 0.2, 0.5))),
-            )));
-            world.push(Box::new(Sphere::new(
-                Point3::new(-1.0, 0.0, -1.0),
-                0.5,
-                Box::new(Dielectric::new(1.5)),
-            )));
-            world.push(Box::new(Sphere::new(
-                Point3::new(-1.0, 0.0, -1.0),
-                -0.45,
-                Box::new(Dielectric::new(1.5)),
-            )));
-            world.push(Box::new(Sphere::new(
-                Point3::new(1.0, 0.0, -1.0),
-                0.5,
-                Box::new(Metal::new(Color::new(0.8, 0.6, 0.2), 0.0)),
-            )));
-
+            let mut world = world_gen.clone();
             (0..IMAGE_WIDTH)
                 .map(move |i| {
                     let mut pixel_color = Vec3::new(0.0, 0.0, 0.0);

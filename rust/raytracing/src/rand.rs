@@ -15,6 +15,9 @@ impl RandUniform {
             rng: thread_rng(),
         }
     }
+    pub fn seed(seed: usize) -> Self {
+        // TODO: implement
+    }
 
     pub fn gen(&mut self) -> f64 {
         self.uniform.sample(&mut self.rng)
