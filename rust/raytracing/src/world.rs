@@ -1,4 +1,4 @@
-use crate::hittable::Hittable;
+use crate::hittable::{HitInfo, Hittable};
 use crate::ray::Ray;
 
 pub struct World {
@@ -21,9 +21,9 @@ impl World {
 }
 
 impl Hittable for World {
-    fn hit(&mut self, ray: &Ray, t_min: f64, t_max: f64) -> bool {
+    fn hit(&mut self, ray: &Ray, t_min: f64, t_max: f64) -> Option<HitInfo> {
         self.objects
             .iter_mut()
-            .any(|object| object.hit(ray, t_min, t_max))
+            .find_map(|object| object.hit(ray, t_min, t_max))
     }
 }

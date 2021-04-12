@@ -1,4 +1,4 @@
-use crate::hittable::Hittable;
+use crate::hittable::{HitInfo, Hittable};
 use crate::ray::Ray;
 use crate::vec3::{Point3, Vec3};
 
@@ -23,7 +23,7 @@ impl Sphere {
 }
 
 impl Hittable for Sphere {
-    fn hit(&mut self, ray: &Ray, t_min: f64, t_max: f64) -> bool {
+    fn hit(&mut self, ray: &Ray, t_min: f64, t_max: f64) -> Option<HitInfo> {
         // NOTE:
         //  || (O + tD) - C ||^2 = r^2
         //  t^2 || D ||^2 - 2t (O-C, D) + || O-C ||^2 - r^2 = 0
@@ -34,7 +34,7 @@ impl Hittable for Sphere {
 
         let discriminant = b * b - a * c;
         if discriminant < 0.0 {
-            return false;
+            return None;
         }
 
         let mut root = (-b - discriminant.sqrt()) / a;
@@ -42,15 +42,19 @@ impl Hittable for Sphere {
         if !(t_min <= root && root <= t_max) {
             root = (-b + discriminant.sqrt()) / a;
             if !(t_min <= root && root <= t_max) {
-                return false;
+                return None;
             }
         }
 
-        let _point = ray.at(root);
-        let _normal = (_point - &self.center) / self.radius;
-        let _outward_normal = self.set_face_normal(ray, &_normal);
+        let point = ray.at(root);
+        let normal = (&point - &self.center) / self.radius;
+        let outward_normal = self.set_face_normal(ray, &normal);
 
-        true
+        Some(HitInfo {
+            point: point,
+            outward_normal: outward_normal,
+            t: root,
+        })
     }
 }
 
@@ -64,7 +68,7 @@ mod tests {
 
         let mut sphere = Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5);
 
-        assert!(sphere.hit(&ray, 0.0, f64::INFINITY));
+        assert!(sphere.hit(&ray, 0.0, f64::INFINITY).is_some());
     }
 
     #[test]
@@ -73,6 +77,6 @@ mod tests {
 
         let mut sphere = Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5);
 
-        assert!(!sphere.hit(&ray, 0.0, f64::INFINITY));
+        assert!(sphere.hit(&ray, 0.0, f64::INFINITY).is_none());
     }
 }
