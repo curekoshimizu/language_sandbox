@@ -9,7 +9,7 @@ mod vec3;
 mod world;
 
 use crate::hittable::Hittable;
-use crate::material::Lambertian;
+use crate::material::{Lambertian, Metal};
 use camera::Camera;
 use color::Color;
 use ray::Ray;
@@ -78,16 +78,25 @@ fn main() -> io::Result<()> {
             let camera = Camera::new(ASPECT_RATIO);
 
             let mut world = World::new();
-
-            world.push(Box::new(Sphere::new(
-                Point3::new(0.0, 0.0, -1.0),
-                0.5,
-                Box::new(Lambertian::new(Color::new(0.8, 0.8, 0.8))),
-            )));
             world.push(Box::new(Sphere::new(
                 Point3::new(0.0, -100.5, -1.0),
                 100.0,
-                Box::new(Lambertian::new(Color::new(0.4, 0.7, 0.5))),
+                Box::new(Lambertian::new(Color::new(0.8, 0.8, 0.0))),
+            )));
+            world.push(Box::new(Sphere::new(
+                Point3::new(0.0, 0.0, -1.0),
+                0.5,
+                Box::new(Lambertian::new(Color::new(0.7, 0.3, 0.3))),
+            )));
+            world.push(Box::new(Sphere::new(
+                Point3::new(-1.0, 0.0, -1.0),
+                0.5,
+                Box::new(Metal::new(Color::new(0.8, 0.8, 0.8))),
+            )));
+            world.push(Box::new(Sphere::new(
+                Point3::new(1.0, 0.0, -1.0),
+                0.5,
+                Box::new(Metal::new(Color::new(0.8, 0.6, 0.2))),
             )));
 
             (0..IMAGE_WIDTH)
