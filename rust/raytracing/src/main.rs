@@ -1,5 +1,6 @@
 mod camera;
 mod color;
+mod degree;
 mod hittable;
 mod material;
 mod rand;
@@ -8,6 +9,7 @@ mod sphere;
 mod vec3;
 mod world;
 
+use crate::degree::Degree;
 use crate::hittable::Hittable;
 use crate::material::{Dielectric, Lambertian, Metal};
 use camera::Camera;
@@ -75,9 +77,17 @@ fn main() -> io::Result<()> {
         .par_iter()
         .map(|&j| {
             let mut rand_uniform = rand::RandUniform::new();
-            let camera = Camera::new(ASPECT_RATIO);
+
+            let camera = Camera::new(
+                Point3::new(-2.0, 2.0, 1.0),
+                Point3::new(0.0, 0.0, -1.0),
+                Point3::new(0.0, 1.0, 0.0),
+                Degree::new(20.0),
+                ASPECT_RATIO,
+            );
 
             let mut world = World::new();
+
             world.push(Box::new(Sphere::new(
                 Point3::new(0.0, -100.5, -1.0),
                 100.0,
@@ -95,7 +105,7 @@ fn main() -> io::Result<()> {
             )));
             world.push(Box::new(Sphere::new(
                 Point3::new(-1.0, 0.0, -1.0),
-                -0.4,
+                -0.45,
                 Box::new(Dielectric::new(1.5)),
             )));
             world.push(Box::new(Sphere::new(
