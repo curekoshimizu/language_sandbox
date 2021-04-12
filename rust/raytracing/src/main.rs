@@ -42,14 +42,6 @@ const IMAGE_HEIGHT: usize = (IMAGE_WIDTH as f64 / ASPECT_RATIO) as usize;
 const SAMPLES_PER_PIXEL: usize = 100;
 
 fn main() -> io::Result<()> {
-    let mut rand_uniform = rand::RandUniform::new();
-
-    let camera = Camera::new(ASPECT_RATIO);
-
-    let mut world = World::new();
-    world.push(Box::new(Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5)));
-    world.push(Box::new(Sphere::new(Point3::new(0.0, -100.5, -1.0), 100.0)));
-
     // render
     let mut f = BufWriter::new(File::create("image.ppm")?);
 
@@ -58,6 +50,13 @@ fn main() -> io::Result<()> {
     write!(f, "255\n")?;
 
     for j in (0..IMAGE_HEIGHT).rev() {
+        let mut rand_uniform = rand::RandUniform::new();
+        let camera = Camera::new(ASPECT_RATIO);
+
+        let mut world = World::new();
+        world.push(Box::new(Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5)));
+        world.push(Box::new(Sphere::new(Point3::new(0.0, -100.5, -1.0), 100.0)));
+
         for i in 0..IMAGE_WIDTH {
             let mut pixel_color = Vec3::new(0.0, 0.0, 0.0);
 
