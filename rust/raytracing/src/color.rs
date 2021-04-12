@@ -2,6 +2,7 @@ use crate::vec3::Vec3;
 use float_cmp::{ApproxEq, F64Margin};
 use std::fmt;
 use std::ops::Deref;
+use std::ops::{Mul, MulAssign};
 
 #[derive(Clone)]
 pub struct Color(pub Vec3);
@@ -33,6 +34,19 @@ impl fmt::Display for Color {
         let y = (255.999 * (self.0.y).sqrt()) as u64;
         let z = (255.999 * (self.0.z).sqrt()) as u64;
         write!(f, "{} {} {}", x, y, z)
+    }
+}
+
+impl Mul<Color> for Color {
+    type Output = Color;
+    fn mul(self, rhs: Color) -> Self::Output {
+        let v = Vec3::mul(self.0, &rhs.0);
+        Color(v)
+    }
+}
+impl MulAssign<Color> for Color {
+    fn mul_assign(&mut self, rhs: Self) {
+        self.0 *= rhs.0;
     }
 }
 

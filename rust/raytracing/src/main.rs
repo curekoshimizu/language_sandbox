@@ -32,9 +32,7 @@ fn ray_color(ray: Ray, world: &mut World) -> Color {
         if let Some(mut hit_info) = world.hit(&cur_ray, 0.001, f64::INFINITY) {
             if let Some(scattered) = hit_info.scatter(&cur_ray) {
                 cur_ray = scattered.ray;
-                cur_attenuation.0.x *= scattered.attenuation.x;
-                cur_attenuation.0.y *= scattered.attenuation.y;
-                cur_attenuation.0.z *= scattered.attenuation.z;
+                cur_attenuation *= scattered.attenuation;
             } else {
                 return Color::new(0.0, 0.0, 0.0);
             }
@@ -46,9 +44,8 @@ fn ray_color(ray: Ray, world: &mut World) -> Color {
             // unit_direction.y in [-1, 1] => t in [0, 1]
             let t = 0.5 * (unit_direction.y + 1.0);
 
-            let sky: Vec3 = cur_attenuation.0
-                * ((1.0 - t) * Vec3::new(1.0, 1.0, 1.0) + t * Vec3::new(0.5, 0.7, 1.0));
-            return sky.into();
+            return cur_attenuation
+                * ((1.0 - t) * Vec3::new(1.0, 1.0, 1.0) + t * Vec3::new(0.5, 0.7, 1.0)).into();
         }
     }
 
