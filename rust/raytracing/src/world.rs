@@ -1,4 +1,3 @@
-use crate::color::Color;
 use crate::hittable::{HitInfo, Hittable};
 use crate::ray::Ray;
 
@@ -38,6 +37,7 @@ impl Hittable for World {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::color::Color;
     use crate::material::Lambertian;
     use crate::sphere::Sphere;
     use crate::vec3::{Point3, Vec3};

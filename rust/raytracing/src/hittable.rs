@@ -5,6 +5,7 @@ use crate::vec3::{Point3, Vec3};
 pub struct HitStatus {
     pub point: Point3,
     pub outward_normal: Vec3,
+    pub front_face: bool,
     pub t: f64,
 }
 
