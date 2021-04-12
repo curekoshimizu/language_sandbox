@@ -9,6 +9,7 @@ mod vec3;
 mod world;
 
 use crate::hittable::Hittable;
+use crate::material::Lambertian;
 use camera::Camera;
 use color::Color;
 use ray::Ray;
@@ -23,17 +24,19 @@ use world::World;
 
 const MAX_DEPTH: usize = 50;
 
-fn ray_color(ray: Ray, world: &mut World, rand_ball: &mut rand::SphereUniform) -> Color {
+fn ray_color(ray: Ray, world: &mut World) -> Color {
     let mut cur_ray = ray;
     let mut cur_attenuation = 1.0;
 
     for _ in 0..MAX_DEPTH {
         if let Some(hash_info) = world.hit(&cur_ray, 0.001, f64::INFINITY) {
-            let direction: Vec3 = &hash_info.outward_normal + rand_ball.gen_vec3();
-
-            cur_attenuation *= 0.5;
-
-            cur_ray = Ray::new(hash_info.point, direction);
+            // TODO: implement
+            assert!(false);
+            // let direction: Vec3 = &hash_info.outward_normal + rand_ball.gen_vec3();
+            //
+            // cur_attenuation *= 0.5;
+            //
+            // cur_ray = Ray::new(hash_info.point, direction);
         } else {
             // render sky
 
@@ -75,12 +78,20 @@ fn main() -> io::Result<()> {
         .par_iter()
         .map(|&j| {
             let mut rand_uniform = rand::RandUniform::new();
-            let mut rand_ball = rand::SphereUniform::new();
             let camera = Camera::new(ASPECT_RATIO);
 
             let mut world = World::new();
-            world.push(Box::new(Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5)));
-            world.push(Box::new(Sphere::new(Point3::new(0.0, -100.5, -1.0), 100.0)));
+
+            world.push(Box::new(Sphere::new(
+                Point3::new(0.0, 0.0, -1.0),
+                0.5,
+                Box::new(Lambertian::new()),
+            )));
+            world.push(Box::new(Sphere::new(
+                Point3::new(0.0, -100.5, -1.0),
+                100.0,
+                Box::new(Lambertian::new()),
+            )));
 
             (0..IMAGE_WIDTH)
                 .map(move |i| {
@@ -95,7 +106,7 @@ fn main() -> io::Result<()> {
                         let v = (j as f64 + v_delta) / (IMAGE_HEIGHT - 1) as f64;
                         let r = camera.get_ray(u, v);
 
-                        let c: Vec3 = ray_color(r, &mut world, &mut rand_ball).into();
+                        let c: Vec3 = ray_color(r, &mut world).into();
                         pixel_color += c;
                     }
                     pixel_color /= SAMPLES_PER_PIXEL as f64;

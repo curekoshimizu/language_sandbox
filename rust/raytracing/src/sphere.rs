@@ -1,15 +1,21 @@
 use crate::hittable::{HitInfo, Hittable};
+use crate::material::{Lambertian, Material};
 use crate::ray::Ray;
 use crate::vec3::{Point3, Vec3};
 
 pub struct Sphere {
     center: Point3,
     radius: f64,
+    material: Box<dyn Material>,
 }
 
 impl Sphere {
-    pub fn new(center: Point3, radius: f64) -> Self {
-        Sphere { center, radius }
+    pub fn new(center: Point3, radius: f64, material: Box<dyn Material>) -> Self {
+        Sphere {
+            center,
+            radius,
+            material,
+        }
     }
     pub fn set_face_normal(&self, ray: &Ray, normal: &Vec3) -> Vec3 {
         let front_face = ray.direction.dot(normal) < 0.0;
@@ -63,7 +69,8 @@ mod tests {
     fn hit() {
         let ray = Ray::new(Point3::new(0.0, 0.0, 0.0), Vec3::new(0.0, 0.0, -1.0));
 
-        let mut sphere = Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5);
+        let material = Box::new(Lambertian::new());
+        let mut sphere = Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5, material);
 
         assert!(sphere.hit(&ray, 0.0, f64::INFINITY).is_some());
     }
@@ -72,7 +79,8 @@ mod tests {
     fn no_hit() {
         let ray = Ray::new(Point3::new(0.0, 0.0, 0.0), Vec3::new(0.0, 0.8, -1.0));
 
-        let mut sphere = Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5);
+        let material = Box::new(Lambertian::new());
+        let mut sphere = Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5, material);
 
         assert!(sphere.hit(&ray, 0.0, f64::INFINITY).is_none());
     }
