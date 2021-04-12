@@ -27,3 +27,41 @@ impl Hittable for World {
             .find_map(|object| object.hit(ray, t_min, t_max))
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::sphere::Sphere;
+    use crate::vec3::{Point3, Vec3};
+
+    #[test]
+    fn empty_world() {
+        let ray = Ray::new(Point3::new(0.0, 0.0, 0.0), Vec3::new(0.0, 0.0, -1.0));
+
+        let mut world = World::new();
+        assert!(world.hit(&ray, 0.0, f64::INFINITY).is_none());
+    }
+
+    #[test]
+    fn hit() {
+        let ray = Ray::new(Point3::new(0.0, 0.0, 0.0), Vec3::new(0.0, 0.0, -1.0));
+
+        let mut world = World::new();
+        world.push(Box::new(Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5)));
+
+        assert!(world.hit(&ray, 0.0, f64::INFINITY).is_some());
+
+        world.clear();
+        assert!(world.hit(&ray, 0.0, f64::INFINITY).is_none());
+    }
+
+    #[test]
+    fn no_hit() {
+        let ray = Ray::new(Point3::new(0.0, 0.0, 0.0), Vec3::new(0.0, 0.8, -1.0));
+
+        let mut world = World::new();
+        world.push(Box::new(Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5)));
+
+        assert!(world.hit(&ray, 0.0, f64::INFINITY).is_none());
+    }
+}
