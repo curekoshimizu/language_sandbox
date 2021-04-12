@@ -13,4 +13,5 @@ members = [
     "web_server",
     "grpc",
     "raytracing",
+    "collections",
 ]
