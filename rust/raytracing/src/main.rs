@@ -78,12 +78,19 @@ fn main() -> io::Result<()> {
         .map(|&j| {
             let mut rand_uniform = rand::RandUniform::new();
 
-            let camera = Camera::new(
-                Point3::new(-2.0, 2.0, 1.0),
-                Point3::new(0.0, 0.0, -1.0),
-                Point3::new(0.0, 1.0, 0.0),
-                Degree::new(20.0),
+            let lookfrom = Point3::new(3.0, 3.0, 2.0);
+            let lookat = Point3::new(0.0, 0.0, -1.0);
+            let vup = Point3::new(0.0, 1.0, 0.0);
+            let dist_to_focus = (&lookfrom - &lookat).length();
+
+            let mut camera = Camera::new(
+                lookfrom,
+                lookat,
+                vup,
+                Degree::new(40.0),
                 ASPECT_RATIO,
+                2.0,
+                dist_to_focus,
             );
 
             let mut world = World::new();
