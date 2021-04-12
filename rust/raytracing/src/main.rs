@@ -20,19 +20,34 @@ use std::io::Write;
 use vec3::{Point3, Vec3};
 use world::World;
 
-fn ray_color(ray: &Ray, world: &mut World) -> Color {
-    if let Some(hash_info) = world.hit(&ray, 0.0, f64::INFINITY) {
-        Color::from(0.5 * (hash_info.outward_normal + 1.0))
-    } else {
-        // render sky
+fn ray_color(ray: Ray, world: &mut World) -> Color {
+    let mut cur_ray = ray;
+    let mut cur_attenuation = 1.0;
 
-        let unit_direction: Vec3 = ray.direction.unit_vector();
+    for _ in 0..50 {
+        if let Some(hash_info) = world.hit(&cur_ray, 0.0, f64::INFINITY) {
+            let target: Vec3 = &hash_info.point + &hash_info.outward_normal; // TODO: add unit_sphere
 
-        // unit_direction.y in [-1, 1] => t in [0, 1]
-        let t = 0.5 * (unit_direction.y + 1.0);
+            cur_attenuation *= 0.5;
 
-        ((1.0 - t) * Vec3::new(1.0, 1.0, 1.0) + t * Vec3::new(0.5, 0.7, 1.0)).into()
+            let sub: Vec3 = target + &hash_info.point;
+            cur_ray = Ray::new(hash_info.point, sub);
+        } else {
+            // render sky
+
+            let unit_direction: Vec3 = cur_ray.direction.unit_vector();
+
+            // unit_direction.y in [-1, 1] => t in [0, 1]
+            let t = 0.5 * (unit_direction.y + 1.0);
+
+            return Color::from(
+                cur_attenuation
+                    * ((1.0 - t) * Vec3::new(1.0, 1.0, 1.0) + t * Vec3::new(0.5, 0.7, 1.0)),
+            );
+        }
     }
+
+    return Color::new(0.0, 0.0, 0.0);
 }
 
 // Image
@@ -46,9 +61,9 @@ fn main() -> io::Result<()> {
     // render
     let mut f = BufWriter::new(File::create("image.ppm")?);
 
-    write!(f, "P3\n")?;
-    write!(f, "{} {}\n", IMAGE_WIDTH, IMAGE_HEIGHT)?;
-    write!(f, "255\n")?;
+    writeln!(f, "P3")?;
+    writeln!(f, "{} {}", IMAGE_WIDTH, IMAGE_HEIGHT)?;
+    writeln!(f, "255")?;
 
     let mut result: Vec<Vec<[f64; 3]>> = Vec::with_capacity(IMAGE_HEIGHT);
 
@@ -76,7 +91,7 @@ fn main() -> io::Result<()> {
                         let v = (j as f64 + v_delta) / (IMAGE_HEIGHT - 1) as f64;
                         let r = camera.get_ray(u, v);
 
-                        let c: Vec3 = ray_color(&r, &mut world).into();
+                        let c: Vec3 = ray_color(r, &mut world).into();
                         pixel_color += c;
                     }
                     pixel_color /= SAMPLES_PER_PIXEL as f64;
@@ -88,7 +103,7 @@ fn main() -> io::Result<()> {
         .collect_into_vec(&mut result);
     for xyzs in result.iter() {
         for xyz in xyzs {
-            write!(f, "{}\n", Color::new(xyz[0], xyz[1], xyz[2]))?;
+            writeln!(f, "{}", Color::new(xyz[0], xyz[1], xyz[2]))?;
         }
     }
 

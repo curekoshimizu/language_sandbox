@@ -9,10 +9,7 @@ pub struct Sphere {
 
 impl Sphere {
     pub fn new(center: Point3, radius: f64) -> Self {
-        Sphere {
-            center: center,
-            radius: radius,
-        }
+        Sphere { center, radius }
     }
     pub fn set_face_normal(&self, ray: &Ray, normal: &Vec3) -> Vec3 {
         let front_face = ray.direction.dot(normal) < 0.0;
@@ -51,8 +48,8 @@ impl Hittable for Sphere {
         let outward_normal = self.set_face_normal(ray, &normal);
 
         Some(HitInfo {
-            point: point,
-            outward_normal: outward_normal,
+            point,
+            outward_normal,
             t: root,
         })
     }
