@@ -49,7 +49,7 @@ fn main() -> io::Result<()> {
     write!(f, "{} {}\n", IMAGE_WIDTH, IMAGE_HEIGHT)?;
     write!(f, "255\n")?;
 
-    for j in (0..IMAGE_HEIGHT).rev() {
+    let result = (0..IMAGE_HEIGHT).rev().map(|j| {
         let mut rand_uniform = rand::RandUniform::new();
         let camera = Camera::new(ASPECT_RATIO);
 
@@ -57,22 +57,30 @@ fn main() -> io::Result<()> {
         world.push(Box::new(Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5)));
         world.push(Box::new(Sphere::new(Point3::new(0.0, -100.5, -1.0), 100.0)));
 
-        for i in 0..IMAGE_WIDTH {
-            let mut pixel_color = Vec3::new(0.0, 0.0, 0.0);
+        (0..IMAGE_WIDTH)
+            .map(move |i| {
+                let mut pixel_color = Vec3::new(0.0, 0.0, 0.0);
 
-            for _ in 0..SAMPLES_PER_PIXEL {
-                let u_delta = rand_uniform.gen();
-                let v_delta = rand_uniform.gen();
+                for _ in 0..SAMPLES_PER_PIXEL {
+                    let u_delta = rand_uniform.gen();
+                    let v_delta = rand_uniform.gen();
 
-                let u = (i as f64 + u_delta) / (IMAGE_WIDTH - 1) as f64;
-                let v = (j as f64 + v_delta) / (IMAGE_HEIGHT - 1) as f64;
-                let r = camera.get_ray(u, v);
+                    let u = (i as f64 + u_delta) / (IMAGE_WIDTH - 1) as f64;
+                    let v = (j as f64 + v_delta) / (IMAGE_HEIGHT - 1) as f64;
+                    let r = camera.get_ray(u, v);
 
-                let c: Vec3 = ray_color(&r, &mut world).into();
-                pixel_color += c;
-            }
-            pixel_color /= SAMPLES_PER_PIXEL as f64;
-            write!(f, "{}\n", Color::from(pixel_color))?;
+                    let c: Vec3 = ray_color(&r, &mut world).into();
+                    pixel_color += c;
+                }
+                pixel_color /= SAMPLES_PER_PIXEL as f64;
+
+                pixel_color.to_xyz()
+            })
+            .collect::<Vec<[f64; 3]>>()
+    });
+    for xyzs in result {
+        for xyz in xyzs {
+            write!(f, "{}\n", Color::new(xyz[0], xyz[1], xyz[2]))?;
         }
     }
 
