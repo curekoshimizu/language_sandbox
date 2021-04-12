@@ -1,4 +1,4 @@
-use float_cmp::{approx_eq, ApproxEq, F64Margin};
+use float_cmp::{ApproxEq, F64Margin};
 use std::ops::{Add, Div, Mul, Neg, Sub};
 
 #[derive(PartialEq, Debug, Clone)]
