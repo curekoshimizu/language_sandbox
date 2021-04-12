@@ -1,4 +1,4 @@
-use crate::hittable::{HitInfo, Hittable};
+use crate::hittable::{HitInfo, HitStatus, Hittable};
 use crate::material::{Lambertian, Material};
 use crate::ray::Ray;
 use crate::vec3::{Point3, Vec3};
@@ -54,9 +54,12 @@ impl Hittable for Sphere {
         let outward_normal = self.set_face_normal(ray, &normal);
 
         Some(HitInfo {
-            point,
-            outward_normal,
-            t: root,
+            hit_status: HitStatus {
+                point,
+                outward_normal,
+                t: root,
+            },
+            material: &mut self.material,
         })
     }
 }
