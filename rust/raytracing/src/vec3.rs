@@ -1,4 +1,5 @@
 use float_cmp::{approx_eq, ApproxEq, F64Margin};
+use std::fmt;
 use std::ops::{Add, Div, Mul, Neg, Sub};
 
 #[derive(PartialEq, Debug, Clone)]
@@ -9,8 +10,34 @@ struct Vec3 {
 }
 
 impl Vec3 {
-    fn new(x: f64, y: f64, z: f64) -> Self {
+    pub fn new(x: f64, y: f64, z: f64) -> Self {
         Vec3 { x: x, y: y, z: z }
+    }
+    pub fn length(&self) -> f64 {
+        (self.x * self.x + self.y * self.y + self.z * self.z).sqrt()
+    }
+    pub fn length_squareed(&self) -> f64 {
+        self.x * self.x + self.y * self.y + self.z * self.z
+    }
+    pub fn dot(&self, rhs: &Vec3) -> Vec3 {
+        self * rhs
+    }
+    pub fn cross(&self, rhs: &Vec3) -> Vec3 {
+        Vec3 {
+            x: self.y * rhs.z,
+            y: self.z * rhs.x,
+            z: self.x * rhs.y,
+        }
+    }
+    pub fn unit_vector(&self) -> Vec3 {
+        let len = self.length();
+        self / &Vec3::new(len, len, len)
+    }
+}
+
+impl fmt::Display for Vec3 {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{} {} {}", self.x, self.y, self.z)
     }
 }
 
@@ -176,5 +203,38 @@ mod tests {
         let a = Vec3::new(0.0, 1.0, 2.0);
         approx_eq!(Vec3, -&a, Vec3::new(0.0, -1.0, -2.0));
         approx_eq!(Vec3, -a, Vec3::new(0.0, -1.0, -2.0));
+    }
+
+    #[test]
+    fn len() {
+        let a = Vec3::new(0.0, 1.0, 2.0);
+        approx_eq!(f64, a.length(), 5.0_f64.sqrt());
+        approx_eq!(f64, a.length_squareed(), 5.0);
+    }
+
+    #[test]
+    fn dot() {
+        let a = Vec3::new(0.0, 1.0, 2.0);
+        let b = Vec3::new(1.0, 1.0, 1.0);
+        approx_eq!(Vec3, a.dot(&b), Vec3::new(0.0, 1.0, 2.0));
+    }
+
+    #[test]
+    fn cross() {
+        let a = Vec3::new(1.0, 2.0, 3.0);
+        let b = Vec3::new(3.0, 4.0, 5.0);
+        approx_eq!(Vec3, a.cross(&b), Vec3::new(-2.0, 4.0, -2.0));
+    }
+
+    #[test]
+    fn unit() {
+        let a = Vec3::new(1.0, 2.0, 3.0);
+        approx_eq!(Vec3, a.unit_vector(), Vec3::new(-2.0, 4.0, -2.0));
+    }
+
+    #[test]
+    fn display() {
+        let a = Vec3::new(1.0, 2.0, 3.0);
+        assert_eq!(format!("{}", a), "1 2 3");
     }
 }
