@@ -80,6 +80,9 @@ impl Vec3 {
 
         (self.x.abs() < eps) && (self.y.abs() < eps) && (self.z.abs() < eps)
     }
+    pub fn reflect(&self, normal: &Vec3) -> Vec3 {
+        self - 2.0 * self.dot(normal) * normal
+    }
 }
 
 impl ApproxEq for Vec3 {
@@ -378,6 +381,16 @@ mod tests {
             Vec3,
             a.unit_vector(),
             Vec3::new(-3.0 / 5.0, 0.0, 4.0 / 5.0)
+        ));
+    }
+    #[test]
+    fn reflect() {
+        let v = Vec3::new(3.0, 1.0, 4.0);
+        let normal = Vec3::new(0.0, 0.0, 1.0);
+        assert!(approx_eq!(
+            Vec3,
+            v.reflect(&normal),
+            Vec3::new(3.0, 1.0, -4.0)
         ));
     }
 }
