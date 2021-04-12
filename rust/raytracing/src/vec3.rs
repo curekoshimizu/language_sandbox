@@ -75,75 +75,39 @@ impl ApproxEq for Vec3 {
     }
 }
 
-impl Add for Vec3 {
-    type Output = Vec3;
-    fn add(self, rhs: Vec3) -> Self::Output {
-        <Vec3>::add(&self, &rhs)
-    }
+macro_rules! forward_ref_binop {
+    ($imp:ident, $method:ident) => {
+        impl $imp for Vec3 {
+            type Output = Vec3;
+            fn $method(self, rhs: Vec3) -> Self::Output {
+                <Vec3>::$method(&self, &rhs)
+            }
+        }
+        impl<'a> $imp<&'a Vec3> for Vec3 {
+            type Output = Vec3;
+            fn $method(self, rhs: &Vec3) -> Self::Output {
+                <Vec3>::$method(&self, rhs)
+            }
+        }
+        impl<'a> $imp<Vec3> for &'a Vec3 {
+            type Output = Vec3;
+            fn $method(self, rhs: Vec3) -> Self::Output {
+                <Vec3>::$method(self, &rhs)
+            }
+        }
+        impl<'a, 'b> $imp<&'b Vec3> for &'a Vec3 {
+            type Output = Vec3;
+            fn $method(self, rhs: &'b Vec3) -> Vec3 {
+                <Vec3>::$method(self, rhs)
+            }
+        }
+    };
 }
 
-impl<'a> Add<&'a Vec3> for Vec3 {
-    type Output = Vec3;
-    fn add(self, rhs: &Vec3) -> Self::Output {
-        <Vec3>::add(&self, rhs)
-    }
-}
-
-impl<'a> Add<Vec3> for &'a Vec3 {
-    type Output = Vec3;
-    fn add(self, rhs: Vec3) -> Self::Output {
-        <Vec3>::add(self, &rhs)
-    }
-}
-
-impl<'a, 'b> Add<&'b Vec3> for &'a Vec3 {
-    type Output = Vec3;
-    fn add(self, rhs: &'b Vec3) -> Vec3 {
-        self.add(rhs)
-    }
-}
-
-impl Sub for Vec3 {
-    type Output = Vec3;
-    fn sub(self, rhs: Vec3) -> Self::Output {
-        <Vec3>::sub(&self, &rhs)
-    }
-}
-
-impl<'a, 'b> Sub<&'b Vec3> for &'a Vec3 {
-    type Output = Vec3;
-    fn sub(self, rhs: &'b Vec3) -> Vec3 {
-        self.sub(rhs)
-    }
-}
-
-impl Mul for Vec3 {
-    type Output = Vec3;
-    fn mul(self, rhs: Vec3) -> Self::Output {
-        <Vec3>::mul(&self, &rhs)
-    }
-}
-
-impl<'a, 'b> Mul<&'b Vec3> for &'a Vec3 {
-    type Output = Vec3;
-    fn mul(self, rhs: &'b Vec3) -> Vec3 {
-        self.mul(rhs)
-    }
-}
-
-impl Div for Vec3 {
-    type Output = Vec3;
-    fn div(self, rhs: Vec3) -> Self::Output {
-        <Vec3>::div(&self, &rhs)
-    }
-}
-
-impl<'a, 'b> Div<&'b Vec3> for &'a Vec3 {
-    type Output = Vec3;
-    fn div(self, rhs: &'b Vec3) -> Vec3 {
-        self.div(rhs)
-    }
-}
+forward_ref_binop! {Add, add}
+forward_ref_binop! {Sub, sub}
+forward_ref_binop! {Mul, mul}
+forward_ref_binop! {Div, div}
 
 impl Neg for Vec3 {
     type Output = Vec3;
