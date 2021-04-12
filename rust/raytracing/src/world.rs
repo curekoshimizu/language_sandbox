@@ -22,10 +22,16 @@ impl World {
 }
 
 impl Hittable for World {
-    fn hit(&mut self, ray: &Ray, t_min: f64, t_max: f64) -> Option<HitInfo> {
-        self.objects
-            .iter_mut()
-            .find_map(|object| object.hit(ray, t_min, t_max))
+    fn hit(&mut self, ray: &Ray, t_min: f64, mut t_max: f64) -> Option<HitInfo> {
+        let mut hit: Option<HitInfo> = None;
+        for object in self.objects.iter_mut() {
+            if let Some(hit_info) = object.hit(ray, t_min, t_max) {
+                t_max = hit_info.hit_status.t;
+                hit = Some(hit_info)
+            }
+        }
+
+        hit
     }
 }
 

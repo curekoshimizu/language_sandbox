@@ -42,3 +42,31 @@ impl Material for Lambertian {
         })
     }
 }
+
+pub struct Metal {
+    albert: Color,
+}
+
+impl Metal {
+    pub fn new(albert: Color) -> Self {
+        Metal { albert: albert }
+    }
+}
+
+impl Material for Metal {
+    fn scatter(&mut self, r_in: &Ray, hit_info: &HitStatus) -> Option<ScatterInfo> {
+        let reflected = r_in
+            .direction
+            .unit_vector()
+            .reflect(&hit_info.outward_normal);
+        let scattered = Ray::new(hit_info.point.clone(), reflected);
+        if scattered.direction.dot(&hit_info.outward_normal) > 0.0 {
+            Some(ScatterInfo {
+                ray: scattered,
+                attenuation: self.albert.clone(),
+            })
+        } else {
+            None
+        }
+    }
+}
