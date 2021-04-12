@@ -47,6 +47,27 @@ impl BallUniform {
     }
 }
 
+pub struct SphereUniform(RandUniform);
+
+impl SphereUniform {
+    pub fn new() -> Self {
+        SphereUniform(RandUniform::new())
+    }
+
+    pub fn gen(&mut self) -> (f64, f64, f64) {
+        let cos_theta = -2.0 * self.0.gen() + 1.0;
+        let sin_theta = (1.0 - cos_theta * cos_theta).sqrt();
+        let phi = 2.0 * std::f64::consts::PI * self.0.gen();
+
+        (sin_theta * phi.cos(), sin_theta * phi.sin(), cos_theta)
+    }
+
+    pub fn gen_vec3(&mut self) -> Vec3 {
+        let (x, y, z) = self.gen();
+        Vec3::new(x, y, z)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -72,7 +93,19 @@ mod tests {
             assert!(-1.0 <= y && y <= 1.0);
             assert!(-1.0 <= z && z <= 1.0);
             assert!(x * x + y * y + z * z <= 1.0);
-            assert_ne!(x, y);
+        }
+    }
+
+    #[test]
+    fn rand_sphere() {
+        {
+            let mut uniform = SphereUniform::new();
+            let (x, y, z) = uniform.gen();
+            assert!(-1.0 <= x && x <= 1.0);
+            assert!(-1.0 <= y && y <= 1.0);
+            assert!(-1.0 <= z && z <= 1.0);
+            let d = x * x + y * y + z * z;
+            assert!(0.99 <= d && d <= 1.0);
         }
     }
 }
