@@ -52,7 +52,11 @@ mod tests {
     fn add() {
         let a = Color::new(1.0, 1.0, 1.0);
         let b = Color::new(0.0, 1.0, 2.0);
-        approx_eq!(Color, a.add(&b).into(), Color::new(1.0, 2.0, 3.0));
+        assert!(approx_eq!(
+            Color,
+            a.add(&b).into(),
+            Color::new(1.0, 2.0, 3.0)
+        ));
     }
 
     #[test]

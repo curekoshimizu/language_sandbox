@@ -35,3 +35,26 @@ impl Camera {
         )
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use float_cmp::approx_eq;
+
+    #[test]
+    fn camera() {
+        let camera = Camera::new(1.0);
+
+        let ray = camera.get_ray(0.0, 0.0);
+        assert!(approx_eq!(Vec3, ray.origin, Vec3::new(0.0, 0.0, 0.0)));
+        assert!(approx_eq!(Vec3, ray.direction, Vec3::new(-1.0, -1.0, -1.0)));
+
+        let ray = camera.get_ray(0.5, 0.5);
+        assert!(approx_eq!(Vec3, ray.origin, Vec3::new(0.0, 0.0, 0.0)));
+        assert!(approx_eq!(Vec3, ray.direction, Vec3::new(0.0, 0.0, -1.0)));
+
+        let ray = camera.get_ray(1.0, 1.0);
+        assert!(approx_eq!(Vec3, ray.origin, Vec3::new(0.0, 0.0, 0.0)));
+        assert!(approx_eq!(Vec3, ray.direction, Vec3::new(1.0, 1.0, -1.0)));
+    }
+}
