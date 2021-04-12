@@ -1,6 +1,5 @@
-use crate::color::Color;
 use crate::hittable::{HitInfo, HitStatus, Hittable};
-use crate::material::{Lambertian, Material};
+use crate::material::Material;
 use crate::ray::Ray;
 use crate::vec3::{Point3, Vec3};
 
@@ -18,11 +17,11 @@ impl Sphere {
             material,
         }
     }
-    pub fn set_face_normal(&self, ray: &Ray, normal: &Vec3) -> Vec3 {
+    pub fn set_face_normal(&self, ray: &Ray, normal: &Vec3) -> (Vec3, bool) {
         let front_face = ray.direction.dot(normal) < 0.0;
         let outward_normal = if front_face { normal.clone() } else { -normal };
 
-        outward_normal
+        (outward_normal, front_face)
     }
 }
 
@@ -52,12 +51,13 @@ impl Hittable for Sphere {
 
         let point = ray.at(root);
         let normal = (&point - &self.center) / self.radius;
-        let outward_normal = self.set_face_normal(ray, &normal);
+        let (outward_normal, front_face) = self.set_face_normal(ray, &normal);
 
         Some(HitInfo {
             hit_status: HitStatus {
                 point,
                 outward_normal,
+                front_face,
                 t: root,
             },
             material: &mut self.material,
@@ -68,6 +68,8 @@ impl Hittable for Sphere {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::color::Color;
+    use crate::material::Lambertian;
 
     #[test]
     fn hit() {
