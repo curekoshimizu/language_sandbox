@@ -2,16 +2,43 @@ mod color;
 mod ray;
 mod vec3;
 
+use color::Color;
+use ray::Ray;
 use std::fs::File;
 use std::io;
 use std::io::BufWriter;
 use std::io::Write;
+use vec3::{Point3, Vec3};
+
+fn ray_coloro(ray: &Ray) -> Color {
+    let unit_direction: Vec3 = ray.direction.unit_vector();
+
+    // unit_direction.y in [-1, 1] => t in [0, 1]
+    let t = 0.5 * (unit_direction.y + 1.0);
+
+    ((1.0 - t) * Vec3::new(1.0, 1.0, 1.0) + t * Vec3::new(0.5, 0.7, 1.0)).into()
+}
+
+// Image
+const ASPECT_RATIO: f64 = 16.0 / 9.0;
+const IMAGE_WIDTH: usize = 400;
+const IMAGE_HEIGHT: usize = (IMAGE_WIDTH as f64 / ASPECT_RATIO) as usize;
+
+// Camera
+const VIEWPOINT_HEIGHT: f64 = 2.0;
+const VIEWPOINT_WIDTH: f64 = ASPECT_RATIO * VIEWPOINT_HEIGHT;
+const FOCAL_LENGTH: f64 = 1.0;
 
 fn main() -> io::Result<()> {
-    const IMAGE_WIDTH: usize = 256;
-    const IMAGE_HEIGHT: usize = 256;
+    let origin = Point3::new(0.0, 0.0, 0.0);
+    let horizontal = Vec3::new(VIEWPOINT_WIDTH, 0.0, 0.0);
+    let vertical = Vec3::new(0.0, VIEWPOINT_HEIGHT, 0.0);
+    let lower_left_cornerl =
+        &origin - &horizontal / 2.0 - &vertical / 2.0 - Vec3::new(0.0, 0.0, FOCAL_LENGTH);
 
-    let mut f = BufWriter::new(File::create("image.ppg")?);
+    // render
+
+    let mut f = BufWriter::new(File::create("image.ppm")?);
 
     write!(f, "P3\n")?;
     write!(f, "{} {}\n", IMAGE_WIDTH, IMAGE_HEIGHT)?;
@@ -19,11 +46,14 @@ fn main() -> io::Result<()> {
 
     for j in (0..IMAGE_HEIGHT).rev() {
         for i in 0..IMAGE_WIDTH {
-            let r: f64 = i as f64 / (IMAGE_WIDTH - 1) as f64;
-            let g: f64 = j as f64 / (IMAGE_WIDTH - 1) as f64;
-            let b: f64 = 0.25;
+            let u = i as f64 / (IMAGE_WIDTH - 1) as f64;
+            let v = j as f64 / (IMAGE_HEIGHT - 1) as f64;
+            let r = Ray::new(
+                origin.clone(),
+                &lower_left_cornerl + u * &horizontal + v * &vertical - &origin,
+            );
 
-            let c = color::Color::new(r, g, b);
+            let c = ray_coloro(&r);
             write!(f, "{}\n", c)?;
         }
     }
