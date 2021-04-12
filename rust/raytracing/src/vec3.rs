@@ -20,8 +20,9 @@ impl Vec3 {
     pub fn length_squareed(&self) -> f64 {
         self.x * self.x + self.y * self.y + self.z * self.z
     }
-    pub fn dot(&self, rhs: &Vec3) -> Vec3 {
-        self * rhs
+    pub fn dot(&self, rhs: &Vec3) -> f64 {
+        let v = self * rhs;
+        v.x + v.y + v.z
     }
     pub fn cross(&self, rhs: &Vec3) -> Vec3 {
         Vec3 {
@@ -252,7 +253,7 @@ mod tests {
     fn dot() {
         let a = Vec3::new(0.0, 1.0, 2.0);
         let b = Vec3::new(1.0, 1.0, 1.0);
-        approx_eq!(Vec3, a.dot(&b), Vec3::new(0.0, 1.0, 2.0));
+        approx_eq!(Vec3, a.dot(&b), 5.0)
     }
 
     #[test]
