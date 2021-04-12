@@ -1,3 +1,4 @@
+mod iter;
 pub const NUM_THREADS: usize = 20000;
 
 #[cfg(test)]
