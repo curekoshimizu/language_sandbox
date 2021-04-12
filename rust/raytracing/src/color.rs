@@ -27,9 +27,10 @@ impl From<Vec3> for Color {
 
 impl fmt::Display for Color {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let x = (255.999 * self.0.x) as u64;
-        let y = (255.999 * self.0.y) as u64;
-        let z = (255.999 * self.0.z) as u64;
+        // gamma-collect for gamma = 2.0
+        let x = (255.999 * (self.0.x).sqrt()) as u64;
+        let y = (255.999 * (self.0.y).sqrt()) as u64;
+        let z = (255.999 * (self.0.z).sqrt()) as u64;
         write!(f, "{} {} {}", x, y, z)
     }
 }

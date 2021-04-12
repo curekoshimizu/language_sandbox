@@ -85,6 +85,7 @@ fn main() -> io::Result<()> {
                 .map(move |i| {
                     let mut pixel_color = Vec3::new(0.0, 0.0, 0.0);
 
+                    // TODO: use sum
                     for _ in 0..SAMPLES_PER_PIXEL {
                         let u_delta = rand_uniform.gen();
                         let v_delta = rand_uniform.gen();
