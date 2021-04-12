@@ -21,10 +21,10 @@ impl Camera {
             &origin - &horizontal / 2.0 - &vertical / 2.0 - Vec3::new(0.0, 0.0, focal_length);
 
         Camera {
-            origin: origin,
-            horizontal: horizontal,
-            vertical: vertical,
-            lower_left_cornerl: lower_left_cornerl,
+            origin,
+            horizontal,
+            vertical,
+            lower_left_cornerl,
         }
     }
 
