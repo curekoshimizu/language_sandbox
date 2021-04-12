@@ -1,13 +1,14 @@
 use float_cmp::{approx_eq, ApproxEq, F64Margin};
-use std::fmt;
 use std::ops::{Add, Div, Mul, Neg, Sub};
 
 #[derive(PartialEq, Debug, Clone)]
-struct Vec3 {
-    x: f64,
-    y: f64,
-    z: f64,
+pub struct Vec3 {
+    pub x: f64,
+    pub y: f64,
+    pub z: f64,
 }
+
+pub struct Point3(Vec3);
 
 impl Vec3 {
     pub fn new(x: f64, y: f64, z: f64) -> Self {
@@ -32,12 +33,6 @@ impl Vec3 {
     pub fn unit_vector(&self) -> Vec3 {
         let len = self.length();
         self / &Vec3::new(len, len, len)
-    }
-}
-
-impl fmt::Display for Vec3 {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{} {} {}", self.x, self.y, self.z)
     }
 }
 
@@ -230,11 +225,5 @@ mod tests {
     fn unit() {
         let a = Vec3::new(1.0, 2.0, 3.0);
         approx_eq!(Vec3, a.unit_vector(), Vec3::new(-2.0, 4.0, -2.0));
-    }
-
-    #[test]
-    fn display() {
-        let a = Vec3::new(1.0, 2.0, 3.0);
-        assert_eq!(format!("{}", a), "1 2 3");
     }
 }
