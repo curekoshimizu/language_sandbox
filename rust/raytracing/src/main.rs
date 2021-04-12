@@ -11,6 +11,7 @@ use crate::hittable::Hittable;
 use camera::Camera;
 use color::Color;
 use ray::Ray;
+use rayon::prelude::*;
 use sphere::Sphere;
 use std::fs::File;
 use std::io;
@@ -49,36 +50,43 @@ fn main() -> io::Result<()> {
     write!(f, "{} {}\n", IMAGE_WIDTH, IMAGE_HEIGHT)?;
     write!(f, "255\n")?;
 
-    let result = (0..IMAGE_HEIGHT).rev().map(|j| {
-        let mut rand_uniform = rand::RandUniform::new();
-        let camera = Camera::new(ASPECT_RATIO);
+    let mut result: Vec<Vec<[f64; 3]>> = Vec::with_capacity(IMAGE_HEIGHT);
 
-        let mut world = World::new();
-        world.push(Box::new(Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5)));
-        world.push(Box::new(Sphere::new(Point3::new(0.0, -100.5, -1.0), 100.0)));
+    (0..IMAGE_HEIGHT)
+        .rev()
+        .collect::<Vec<usize>>()
+        .par_iter()
+        .map(|&j| {
+            let mut rand_uniform = rand::RandUniform::new();
+            let camera = Camera::new(ASPECT_RATIO);
 
-        (0..IMAGE_WIDTH)
-            .map(move |i| {
-                let mut pixel_color = Vec3::new(0.0, 0.0, 0.0);
+            let mut world = World::new();
+            world.push(Box::new(Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5)));
+            world.push(Box::new(Sphere::new(Point3::new(0.0, -100.5, -1.0), 100.0)));
 
-                for _ in 0..SAMPLES_PER_PIXEL {
-                    let u_delta = rand_uniform.gen();
-                    let v_delta = rand_uniform.gen();
+            (0..IMAGE_WIDTH)
+                .map(move |i| {
+                    let mut pixel_color = Vec3::new(0.0, 0.0, 0.0);
 
-                    let u = (i as f64 + u_delta) / (IMAGE_WIDTH - 1) as f64;
-                    let v = (j as f64 + v_delta) / (IMAGE_HEIGHT - 1) as f64;
-                    let r = camera.get_ray(u, v);
+                    for _ in 0..SAMPLES_PER_PIXEL {
+                        let u_delta = rand_uniform.gen();
+                        let v_delta = rand_uniform.gen();
 
-                    let c: Vec3 = ray_color(&r, &mut world).into();
-                    pixel_color += c;
-                }
-                pixel_color /= SAMPLES_PER_PIXEL as f64;
+                        let u = (i as f64 + u_delta) / (IMAGE_WIDTH - 1) as f64;
+                        let v = (j as f64 + v_delta) / (IMAGE_HEIGHT - 1) as f64;
+                        let r = camera.get_ray(u, v);
 
-                pixel_color.to_xyz()
-            })
-            .collect::<Vec<[f64; 3]>>()
-    });
-    for xyzs in result {
+                        let c: Vec3 = ray_color(&r, &mut world).into();
+                        pixel_color += c;
+                    }
+                    pixel_color /= SAMPLES_PER_PIXEL as f64;
+
+                    pixel_color.to_xyz()
+                })
+                .collect::<Vec<[f64; 3]>>()
+        })
+        .collect_into_vec(&mut result);
+    for xyzs in result.iter() {
         for xyz in xyzs {
             write!(f, "{}\n", Color::new(xyz[0], xyz[1], xyz[2]))?;
         }
