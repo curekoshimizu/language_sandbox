@@ -26,9 +26,9 @@ impl Vec3 {
     }
     pub fn cross(&self, rhs: &Vec3) -> Vec3 {
         Vec3 {
-            x: self.y * rhs.z,
-            y: self.z * rhs.x,
-            z: self.x * rhs.y,
+            x: self.y * rhs.z - self.z * rhs.y,
+            y: self.z * rhs.x - self.x * rhs.z,
+            z: self.x * rhs.y - self.y * rhs.x,
         }
     }
     pub fn unit_vector(&self) -> Vec3 {
@@ -152,7 +152,7 @@ impl<'a> Neg for &'a Vec3 {
         Vec3 {
             x: -self.x,
             y: -self.y,
-            z: -self.y,
+            z: -self.z,
         }
     }
 }
@@ -163,109 +163,127 @@ mod tests {
     use float_cmp::approx_eq;
 
     #[test]
+    fn approx() {
+        assert!(approx_eq!(
+            Vec3,
+            Vec3::new(1.0, 2.0, 3.0),
+            Vec3::new(1.0, 2.0, 3.0)
+        ));
+        assert!(!approx_eq!(
+            Vec3,
+            Vec3::new(1.0, 2.0, 3.0),
+            Vec3::new(-1.0, 2.0, 3.0)
+        ));
+    }
+
+    #[test]
     fn add() {
         let a = Vec3::new(1.0, 1.0, 1.0);
         let b = Vec3::new(0.0, 1.0, 2.0);
-        approx_eq!(Vec3, &a + &b, Vec3::new(1.0, 2.0, 3.0));
-        approx_eq!(Vec3, a + b, Vec3::new(1.0, 2.0, 3.0));
+        assert!(approx_eq!(Vec3, &a + &b, Vec3::new(1.0, 2.0, 3.0)));
+        assert!(approx_eq!(Vec3, a + b, Vec3::new(1.0, 2.0, 3.0)));
     }
 
     #[test]
     fn sub() {
         let a = Vec3::new(1.0, 1.0, 1.0);
         let b = Vec3::new(0.0, 1.0, 2.0);
-        approx_eq!(Vec3, &a - &b, Vec3::new(1.0, 0.0, -1.0));
-        approx_eq!(Vec3, a - b, Vec3::new(1.0, 0.0, -1.0));
+        assert!(approx_eq!(Vec3, &a - &b, Vec3::new(1.0, 0.0, -1.0)));
+        assert!(approx_eq!(Vec3, a - b, Vec3::new(1.0, 0.0, -1.0)));
 
-        approx_eq!(
+        assert!(approx_eq!(
             Vec3,
             Vec3::new(0.0, 1.0, 2.0) + Vec3::new(1.0, 1.0, 1.0),
             Vec3::new(1.0, 2.0, 3.0)
-        );
-        approx_eq!(
+        ));
+        assert!(approx_eq!(
             Vec3,
             Vec3::new(0.0, 1.0, 2.0) + &Vec3::new(1.0, 1.0, 1.0),
             Vec3::new(1.0, 2.0, 3.0)
-        );
-        approx_eq!(
+        ));
+        assert!(approx_eq!(
             Vec3,
             &Vec3::new(0.0, 1.0, 2.0) + Vec3::new(1.0, 1.0, 1.0),
             Vec3::new(1.0, 2.0, 3.0)
-        );
-        approx_eq!(
+        ));
+        assert!(approx_eq!(
             Vec3,
             &Vec3::new(0.0, 1.0, 2.0) + &Vec3::new(1.0, 1.0, 1.0),
             Vec3::new(1.0, 2.0, 3.0)
-        );
-        approx_eq!(
+        ));
+        assert!(approx_eq!(
             Vec3,
             Vec3::new(0.0, 1.0, 2.0) + 1.0,
             Vec3::new(1.0, 2.0, 3.0)
-        );
-        approx_eq!(
+        ));
+        assert!(approx_eq!(
             Vec3,
             &Vec3::new(0.0, 1.0, 2.0) + 1.0,
             Vec3::new(1.0, 2.0, 3.0)
-        );
-        approx_eq!(
+        ));
+        assert!(approx_eq!(
             Vec3,
             1.0 + Vec3::new(0.0, 1.0, 2.0),
             Vec3::new(1.0, 2.0, 3.0)
-        );
-        approx_eq!(
+        ));
+        assert!(approx_eq!(
             Vec3,
             1.0 + &Vec3::new(0.0, 1.0, 2.0),
             Vec3::new(1.0, 2.0, 3.0)
-        );
+        ));
     }
 
     #[test]
     fn mul() {
         let a = Vec3::new(1.0, 1.0, 1.0);
         let b = Vec3::new(0.0, 1.0, 2.0);
-        approx_eq!(Vec3, &a * &b, Vec3::new(0.0, 1.0, 2.0));
-        approx_eq!(Vec3, a * b, Vec3::new(0.0, 1.0, 2.0));
+        assert!(approx_eq!(Vec3, &a * &b, Vec3::new(0.0, 1.0, 2.0)));
+        assert!(approx_eq!(Vec3, a * b, Vec3::new(0.0, 1.0, 2.0)));
     }
 
     #[test]
     fn div() {
         let b = Vec3::new(0.0, 1.0, 2.0);
         let a = Vec3::new(1.0, 2.0, 1.0);
-        approx_eq!(Vec3, &b / &a, Vec3::new(0.0, 0.5, 2.0));
-        approx_eq!(Vec3, b / a, Vec3::new(0.0, 0.5, 2.0));
+        assert!(approx_eq!(Vec3, &b / &a, Vec3::new(0.0, 0.5, 2.0)));
+        assert!(approx_eq!(Vec3, b / a, Vec3::new(0.0, 0.5, 2.0)));
     }
 
     #[test]
     fn neg() {
         let a = Vec3::new(0.0, 1.0, 2.0);
-        approx_eq!(Vec3, -&a, Vec3::new(0.0, -1.0, -2.0));
-        approx_eq!(Vec3, -a, Vec3::new(0.0, -1.0, -2.0));
+        assert!(approx_eq!(Vec3, -&a, Vec3::new(0.0, -1.0, -2.0)));
+        assert!(approx_eq!(Vec3, -a, Vec3::new(0.0, -1.0, -2.0)));
     }
 
     #[test]
     fn len() {
         let a = Vec3::new(0.0, 1.0, 2.0);
-        approx_eq!(f64, a.length(), 5.0_f64.sqrt());
-        approx_eq!(f64, a.length_squared(), 5.0);
+        assert!(approx_eq!(f64, a.length(), 5.0_f64.sqrt()));
+        assert!(approx_eq!(f64, a.length_squared(), 5.0));
     }
 
     #[test]
     fn dot() {
         let a = Vec3::new(0.0, 1.0, 2.0);
-        let b = Vec3::new(1.0, 1.0, 1.0);
-        approx_eq!(f64, a.dot(&b), 5.0);
+        let b = Vec3::new(1.0, 1.0, 2.0);
+        assert!(approx_eq!(f64, a.dot(&b), 5.0));
     }
 
     #[test]
     fn cross() {
         let a = Vec3::new(1.0, 2.0, 3.0);
         let b = Vec3::new(3.0, 4.0, 5.0);
-        approx_eq!(Vec3, a.cross(&b), Vec3::new(-2.0, 4.0, -2.0));
+        assert!(approx_eq!(Vec3, a.cross(&b), Vec3::new(-2.0, 4.0, -2.0)));
     }
 
     #[test]
     fn unit() {
-        let a = Vec3::new(1.0, 2.0, 3.0);
-        approx_eq!(Vec3, a.unit_vector(), Vec3::new(-2.0, 4.0, -2.0));
+        let a = Vec3::new(-3.0, 0.0, 4.0);
+        assert!(approx_eq!(
+            Vec3,
+            a.unit_vector(),
+            Vec3::new(-3.0 / 5.0, 0.0, 4.0 / 5.0)
+        ));
     }
 }
