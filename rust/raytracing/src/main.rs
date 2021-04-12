@@ -26,15 +26,17 @@ const MAX_DEPTH: usize = 50;
 
 fn ray_color(ray: Ray, world: &mut World) -> Color {
     let mut cur_ray = ray;
-    let mut cur_attenuation = 1.0;
+    let mut cur_attenuation = Color::new(1.0, 1.0, 1.0);
 
     for _ in 0..MAX_DEPTH {
         if let Some(mut hit_info) = world.hit(&cur_ray, 0.001, f64::INFINITY) {
             if let Some(scattered) = hit_info.scatter(&cur_ray) {
-                cur_attenuation *= 0.5;
-                cur_ray = scattered;
+                cur_ray = scattered.ray;
+                cur_attenuation.0.x *= scattered.attenuation.x;
+                cur_attenuation.0.y *= scattered.attenuation.y;
+                cur_attenuation.0.z *= scattered.attenuation.z;
             } else {
-                assert!(false);
+                return Color::new(0.0, 0.0, 0.0);
             }
         } else {
             // render sky
@@ -44,10 +46,9 @@ fn ray_color(ray: Ray, world: &mut World) -> Color {
             // unit_direction.y in [-1, 1] => t in [0, 1]
             let t = 0.5 * (unit_direction.y + 1.0);
 
-            return Color::from(
-                cur_attenuation
-                    * ((1.0 - t) * Vec3::new(1.0, 1.0, 1.0) + t * Vec3::new(0.5, 0.7, 1.0)),
-            );
+            let sky: Vec3 = cur_attenuation.0
+                * ((1.0 - t) * Vec3::new(1.0, 1.0, 1.0) + t * Vec3::new(0.5, 0.7, 1.0));
+            return sky.into();
         }
     }
 
@@ -84,12 +85,12 @@ fn main() -> io::Result<()> {
             world.push(Box::new(Sphere::new(
                 Point3::new(0.0, 0.0, -1.0),
                 0.5,
-                Box::new(Lambertian::new()),
+                Box::new(Lambertian::new(Color::new(0.8, 0.8, 0.8))),
             )));
             world.push(Box::new(Sphere::new(
                 Point3::new(0.0, -100.5, -1.0),
                 100.0,
-                Box::new(Lambertian::new()),
+                Box::new(Lambertian::new(Color::new(0.4, 0.7, 0.5))),
             )));
 
             (0..IMAGE_WIDTH)

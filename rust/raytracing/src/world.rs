@@ -1,3 +1,4 @@
+use crate::color::Color;
 use crate::hittable::{HitInfo, Hittable};
 use crate::ray::Ray;
 
@@ -48,7 +49,7 @@ mod tests {
         let ray = Ray::new(Point3::new(0.0, 0.0, 0.0), Vec3::new(0.0, 0.0, -1.0));
 
         let mut world = World::new();
-        let material = Box::new(Lambertian::new());
+        let material = Box::new(Lambertian::new(Color::new(1.0, 1.0, 1.0)));
         world.push(Box::new(Sphere::new(
             Point3::new(0.0, 0.0, -1.0),
             0.5,
@@ -66,7 +67,7 @@ mod tests {
         let ray = Ray::new(Point3::new(0.0, 0.0, 0.0), Vec3::new(0.0, 0.8, -1.0));
 
         let mut world = World::new();
-        let material = Box::new(Lambertian::new());
+        let material = Box::new(Lambertian::new(Color::new(1.0, 1.0, 1.0)));
         world.push(Box::new(Sphere::new(
             Point3::new(0.0, 0.0, -1.0),
             0.5,

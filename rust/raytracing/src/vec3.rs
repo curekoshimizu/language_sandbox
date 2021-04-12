@@ -11,6 +11,12 @@ pub struct Vec3 {
     pub z: f64,
 }
 
+impl From<Color> for Vec3 {
+    fn from(c: Color) -> Self {
+        c.deref().clone()
+    }
+}
+
 pub type Point3 = Vec3;
 
 impl Vec3 {
@@ -69,6 +75,11 @@ impl Vec3 {
     pub fn to_xyz(&self) -> [f64; 3] {
         [self.x, self.y, self.z]
     }
+    pub fn near_zero(&self) -> bool {
+        let eps = 1e-8;
+
+        (self.x.abs() < eps) && (self.y.abs() < eps) && (self.z.abs() < eps)
+    }
 }
 
 impl ApproxEq for Vec3 {
@@ -79,12 +90,6 @@ impl ApproxEq for Vec3 {
         self.x.approx_eq(other.x, margin)
             && self.y.approx_eq(other.y, margin)
             && self.z.approx_eq(other.z, margin)
-    }
-}
-
-impl From<Color> for Vec3 {
-    fn from(c: Color) -> Self {
-        c.deref().clone()
     }
 }
 

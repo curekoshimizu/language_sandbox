@@ -1,4 +1,4 @@
-use crate::material::Material;
+use crate::material::{Material, ScatterInfo};
 use crate::ray::Ray;
 use crate::vec3::{Point3, Vec3};
 
@@ -14,7 +14,7 @@ pub struct HitInfo<'a> {
 }
 
 impl<'a> HitInfo<'a> {
-    pub fn scatter(&mut self, ray: &Ray) -> Option<Ray> {
+    pub fn scatter(&mut self, ray: &Ray) -> Option<ScatterInfo> {
         self.material.scatter(ray, &self.hit_status)
     }
 }
