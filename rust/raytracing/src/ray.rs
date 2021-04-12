@@ -1,8 +1,8 @@
 use crate::vec3::{Point3, Vec3};
 
 pub struct Ray {
-    origin: Vec3,
-    direction: Point3,
+    pub origin: Vec3,
+    pub direction: Point3,
 }
 
 impl Ray {
@@ -28,7 +28,6 @@ mod tests {
         let ray = Ray::new(Point3::new(1.0, 2.0, 3.0), Vec3::new(2.0, 2.0, 1.0));
 
         approx_eq!(Point3, ray.at(0.0), Point3::new(1.0, 2.0, 3.0));
-
         approx_eq!(Point3, ray.at(1.0), Point3::new(3.0, 4.0, 6.0));
     }
 }
