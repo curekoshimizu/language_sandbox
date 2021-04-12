@@ -42,7 +42,7 @@ const IMAGE_HEIGHT: usize = (IMAGE_WIDTH as f64 / ASPECT_RATIO) as usize;
 const SAMPLES_PER_PIXEL: usize = 100;
 
 fn main() -> io::Result<()> {
-    let rand_uniform = rand::RandUniform::new(IMAGE_HEIGHT * IMAGE_WIDTH * SAMPLES_PER_PIXEL * 2);
+    let mut rand_uniform = rand::RandUniform::new();
 
     let camera = Camera::new(ASPECT_RATIO);
 
