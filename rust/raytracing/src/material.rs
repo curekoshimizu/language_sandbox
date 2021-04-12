@@ -1,6 +1,6 @@
 use crate::color::Color;
 use crate::hittable::HitStatus;
-use crate::rand;
+use crate::rand::BallUniform;
 use crate::rand::SphereUniform;
 use crate::ray::Ray;
 use crate::vec3::Vec3;
@@ -22,7 +22,7 @@ pub struct Lambertian {
 impl Lambertian {
     pub fn new(albert: Color) -> Self {
         Lambertian {
-            rand_sphere: rand::SphereUniform::new(),
+            rand_sphere: SphereUniform::new(),
             albert: albert,
         }
     }
@@ -44,12 +44,18 @@ impl Material for Lambertian {
 }
 
 pub struct Metal {
+    rand_sphere: BallUniform,
     albert: Color,
+    fuzz: f64,
 }
 
 impl Metal {
-    pub fn new(albert: Color) -> Self {
-        Metal { albert: albert }
+    pub fn new(albert: Color, fuzz: f64) -> Self {
+        Metal {
+            albert,
+            fuzz,
+            rand_sphere: BallUniform::new(),
+        }
     }
 }
 
@@ -58,7 +64,8 @@ impl Material for Metal {
         let reflected = r_in
             .direction
             .unit_vector()
-            .reflect(&hit_info.outward_normal);
+            .reflect(&hit_info.outward_normal)
+            + self.fuzz * self.rand_sphere.gen_vec3();
         let scattered = Ray::new(hit_info.point.clone(), reflected);
         if scattered.direction.dot(&hit_info.outward_normal) > 0.0 {
             Some(ScatterInfo {
