@@ -1,5 +1,5 @@
 use crate::vec3::Vec3;
-use float_cmp::{approx_eq, ApproxEq, F64Margin};
+use float_cmp::{ApproxEq, F64Margin};
 use std::fmt;
 use std::ops::Deref;
 
