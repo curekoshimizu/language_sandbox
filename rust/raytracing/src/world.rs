@@ -31,6 +31,7 @@ impl Hittable for World {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::material::Lambertian;
     use crate::sphere::Sphere;
     use crate::vec3::{Point3, Vec3};
 
@@ -47,7 +48,12 @@ mod tests {
         let ray = Ray::new(Point3::new(0.0, 0.0, 0.0), Vec3::new(0.0, 0.0, -1.0));
 
         let mut world = World::new();
-        world.push(Box::new(Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5)));
+        let material = Box::new(Lambertian::new());
+        world.push(Box::new(Sphere::new(
+            Point3::new(0.0, 0.0, -1.0),
+            0.5,
+            material,
+        )));
 
         assert!(world.hit(&ray, 0.0, f64::INFINITY).is_some());
 
@@ -60,7 +66,12 @@ mod tests {
         let ray = Ray::new(Point3::new(0.0, 0.0, 0.0), Vec3::new(0.0, 0.8, -1.0));
 
         let mut world = World::new();
-        world.push(Box::new(Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5)));
+        let material = Box::new(Lambertian::new());
+        world.push(Box::new(Sphere::new(
+            Point3::new(0.0, 0.0, -1.0),
+            0.5,
+            material,
+        )));
 
         assert!(world.hit(&ray, 0.0, f64::INFINITY).is_none());
     }

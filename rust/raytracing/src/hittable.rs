@@ -6,7 +6,6 @@ pub struct HitInfo {
     pub point: Point3,
     pub outward_normal: Vec3,
     pub t: f64,
-    pub material: Box<dyn Material>,
 }
 
 pub trait Hittable {
