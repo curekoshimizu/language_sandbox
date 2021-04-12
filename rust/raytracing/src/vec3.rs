@@ -66,6 +66,9 @@ impl Vec3 {
             z: self.z / rhs.z,
         }
     }
+    pub fn to_xyz(&self) -> [f64; 3] {
+        [self.x, self.y, self.z]
+    }
 }
 
 impl ApproxEq for Vec3 {
