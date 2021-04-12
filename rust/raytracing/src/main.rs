@@ -1,3 +1,4 @@
+mod camera;
 mod color;
 mod hittable;
 mod ray;
@@ -6,6 +7,7 @@ mod vec3;
 mod world;
 
 use crate::hittable::Hittable;
+use camera::Camera;
 use color::Color;
 use ray::Ray;
 use sphere::Sphere;
@@ -36,17 +38,8 @@ const ASPECT_RATIO: f64 = 16.0 / 9.0;
 const IMAGE_WIDTH: usize = 400;
 const IMAGE_HEIGHT: usize = (IMAGE_WIDTH as f64 / ASPECT_RATIO) as usize;
 
-// Camera
-const VIEWPOINT_HEIGHT: f64 = 2.0;
-const VIEWPOINT_WIDTH: f64 = ASPECT_RATIO * VIEWPOINT_HEIGHT;
-const FOCAL_LENGTH: f64 = 1.0;
-
 fn main() -> io::Result<()> {
-    let origin = Point3::new(0.0, 0.0, 0.0);
-    let horizontal = Vec3::new(VIEWPOINT_WIDTH, 0.0, 0.0);
-    let vertical = Vec3::new(0.0, VIEWPOINT_HEIGHT, 0.0);
-    let lower_left_cornerl =
-        &origin - &horizontal / 2.0 - &vertical / 2.0 - Vec3::new(0.0, 0.0, FOCAL_LENGTH);
+    let camera = Camera::new(ASPECT_RATIO);
 
     let mut world = World::new();
     world.push(Box::new(Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5)));
@@ -63,10 +56,7 @@ fn main() -> io::Result<()> {
         for i in 0..IMAGE_WIDTH {
             let u = i as f64 / (IMAGE_WIDTH - 1) as f64;
             let v = j as f64 / (IMAGE_HEIGHT - 1) as f64;
-            let r = Ray::new(
-                origin.clone(),
-                &lower_left_cornerl + u * &horizontal + v * &vertical - &origin,
-            );
+            let r = camera.get_ray(u, v);
 
             let c = ray_color(&r, &mut world);
             write!(f, "{}\n", c)?;
