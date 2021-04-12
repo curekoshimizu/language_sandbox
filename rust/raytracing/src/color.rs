@@ -76,6 +76,20 @@ mod tests {
     }
 
     #[test]
+    fn mul() {
+        let a = Color::new(1.0, 1.0, 1.0);
+        let b = Color::new(0.0, 1.0, 2.0);
+        assert!(approx_eq!(Color, a * b, Color::new(0.0, 1.0, 2.0)));
+    }
+    #[test]
+    fn mul_assign() {
+        let mut a = Color::new(1.0, 1.0, 1.0);
+        let b = Color::new(0.0, 1.0, 2.0);
+        a *= b;
+        assert!(approx_eq!(Color, a, Color::new(0.0, 1.0, 2.0)));
+    }
+
+    #[test]
     fn display() {
         let color = Color::new(0.0, 0.5, 1.0);
         assert_eq!(format!("Color({})", color), "Color(0 181 255)");
