@@ -1,6 +1,7 @@
 mod camera;
 mod color;
 mod hittable;
+mod material;
 mod rand;
 mod ray;
 mod sphere;
@@ -22,7 +23,7 @@ use world::World;
 
 const MAX_DEPTH: usize = 50;
 
-fn ray_color(ray: Ray, world: &mut World, rand_ball: &mut rand::BallUniform) -> Color {
+fn ray_color(ray: Ray, world: &mut World, rand_ball: &mut rand::SphereUniform) -> Color {
     let mut cur_ray = ray;
     let mut cur_attenuation = 1.0;
 
@@ -74,7 +75,7 @@ fn main() -> io::Result<()> {
         .par_iter()
         .map(|&j| {
             let mut rand_uniform = rand::RandUniform::new();
-            let mut rand_ball = rand::BallUniform::new();
+            let mut rand_ball = rand::SphereUniform::new();
             let camera = Camera::new(ASPECT_RATIO);
 
             let mut world = World::new();
