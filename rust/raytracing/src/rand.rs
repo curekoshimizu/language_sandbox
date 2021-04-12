@@ -21,6 +21,21 @@ impl RandUniform {
     }
 }
 
+pub struct R2BallUniform(RandUniform);
+
+impl R2BallUniform {
+    pub fn new() -> Self {
+        R2BallUniform(RandUniform::new())
+    }
+
+    pub fn gen(&mut self) -> (f64, f64) {
+        let theta = 2.0 * std::f64::consts::PI * self.0.gen();
+        let radius = self.0.gen().sqrt();
+
+        (radius * theta.cos(), radius * theta.sin())
+    }
+}
+
 pub struct BallUniform(RandUniform);
 
 impl BallUniform {
