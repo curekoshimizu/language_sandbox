@@ -5,17 +5,35 @@ use std::sync::mpsc::Receiver;
 use std::thread;
 use std::thread::JoinHandle;
 
-pub struct RandUniform {
-    rx: Receiver<f64>,
-    pub handle: Option<JoinHandle<()>>,
+struct RandGenerator<T> {
+    rx: Receiver<T>,
+    handle: Option<JoinHandle<()>>,
 }
+
+impl<T> RandGenerator<T> {
+    fn gen(&self) -> T {
+        self.rx.recv().unwrap()
+    }
+    fn stop(&mut self) {
+        self.handle.take().map(JoinHandle::join);
+        assert!(self.handle.is_none());
+    }
+}
+
+impl<T> Drop for RandGenerator<T> {
+    fn drop(&mut self) {
+        self.stop();
+    }
+}
+
+pub struct RandUniform(RandGenerator<f64>);
 
 impl RandUniform {
     pub fn new(nsize: usize) -> Self {
-        let (rand_tx, rand_rx) = mpsc::channel();
+        let (tx, rx) = mpsc::channel();
 
-        RandUniform {
-            rx: rand_rx,
+        RandUniform(RandGenerator {
+            rx: rx,
             handle: Some(thread::spawn(move || {
                 // random number generator thread
                 let uniform_gen = Uniform::from(0.0..1.0);
@@ -23,25 +41,31 @@ impl RandUniform {
                 let rand_val = uniform_gen.sample(&mut rng);
 
                 for _ in 0..nsize {
-                    rand_tx.send(rand_val).unwrap();
+                    tx.send(rand_val).unwrap();
                 }
             })),
-        }
+        })
     }
 
     pub fn gen(&self) -> f64 {
-        self.rx.recv().unwrap()
-    }
-
-    pub fn stop(&mut self) {
-        self.handle.take().map(JoinHandle::join);
-        assert!(self.handle.is_none());
+        self.0.gen()
     }
 }
 
-impl Drop for RandUniform {
-    fn drop(&mut self) {
-        println!("stopped");
-        self.stop();
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn rand_unitform() {
+        {
+            let uniform = RandUniform::new(1);
+            let x = uniform.gen();
+            assert!(0.0 <= x && x <= 1.0);
+        }
+        {
+            let u = RandUniform::new(10);
+            drop(u);
+        }
     }
 }
