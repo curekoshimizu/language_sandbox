@@ -1,27 +1,24 @@
 use crate::vec3::Vec3;
 use rand::distributions::{Distribution, Uniform};
 use rand::rngs::StdRng;
-use rand::rngs::ThreadRng;
-use rand::thread_rng;
+use rand::SeedableRng;
 
 pub struct RandUniform {
     uniform: Uniform<f64>,
-    rng: ThreadRng,
+    rng: StdRng,
 }
 
 impl RandUniform {
     pub fn new() -> Self {
         RandUniform {
             uniform: Uniform::from(0.0..1.0),
-            rng: thread_rng(),
+            rng: StdRng::from_entropy(),
         }
     }
-    pub fn fixed_seed() -> Self {
+    pub fn from_seed(n: u64) -> Self {
         RandUniform {
-            // TODO: FIXME
             uniform: Uniform::from(0.0..1.0),
-            // rng: StdRng::from_seed_u64(0),
-            rng: thread_rng(),
+            rng: StdRng::seed_from_u64(n),
         }
     }
 
