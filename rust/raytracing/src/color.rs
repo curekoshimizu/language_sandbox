@@ -21,7 +21,7 @@ impl Color {
         Color(Vec3::new(x, y, z))
     }
     pub fn random() -> Self {
-        let uniform = RandUniform::new();
+        let mut uniform = RandUniform::new();
         Color(Vec3::new(uniform.gen(), uniform.gen(), uniform.gen()))
     }
 }
