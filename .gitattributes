@@ -1,0 +1,4 @@
+*.PNG filter=lfs diff=lfs merge=lfs -text
+*.png filter=lfs diff=lfs merge=lfs -text
+*.ppm filter=lfs diff=lfs merge=lfs -text
+*.PPM filter=lfs diff=lfs merge=lfs -text
