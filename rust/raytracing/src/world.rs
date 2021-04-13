@@ -1,7 +1,6 @@
 use crate::hittable::{HitInfo, Hittable};
 use crate::ray::Ray;
 
-#[derive(Clone)]
 pub struct World {
     objects: Vec<Box<dyn Hittable>>,
 }

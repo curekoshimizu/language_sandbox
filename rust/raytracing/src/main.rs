@@ -63,7 +63,7 @@ const IMAGE_HEIGHT: usize = (IMAGE_WIDTH as f64 / ASPECT_RATIO) as usize;
 const SAMPLES_PER_PIXEL: usize = 500;
 
 fn random_scene() -> World {
-    let world = World::new();
+    let mut world = World::new();
 
     world.push(Box::new(Sphere::new(
         Point3::new(0.0, -1000.0, 0.0),
@@ -71,7 +71,7 @@ fn random_scene() -> World {
         Box::new(Lambertian::new(Color::new(0.5, 0.5, 0.5))),
     )));
 
-    let uniform = RandUniform::new();
+    let mut uniform = RandUniform::fixed_seed();
 
     for a in -11..11 {
         for b in -11..11 {
@@ -82,12 +82,12 @@ fn random_scene() -> World {
                 b as f64 + 0.9 * uniform.gen(),
             );
 
-            if (center - Point3::new(4.0, 0.2, 0.0)).length() > 0.9 {
+            if (&center - Point3::new(4.0, 0.2, 0.0)).length() > 0.9 {
                 if choose_mat < 0.8 {
                     // diffuse
                     let albedo = Color::random() * Color::random();
                     world.push(Box::new(Sphere::new(
-                        center,
+                        center.clone(),
                         0.2,
                         Box::new(Lambertian::new(albedo)),
                     )));
@@ -95,14 +95,14 @@ fn random_scene() -> World {
                     // metal
                     let albedo = Color::random(); // TODO:
                     world.push(Box::new(Sphere::new(
-                        center,
+                        center.clone(),
                         0.2,
                         Box::new(Metal::new(albedo, uniform.gen() / 10.0)),
                     )));
                 } else {
                     // glass
                     world.push(Box::new(Sphere::new(
-                        center,
+                        center.clone(),
                         0.2,
                         Box::new(Dielectric::new(1.5)),
                     )));
@@ -131,7 +131,6 @@ fn random_scene() -> World {
 }
 
 fn main() -> io::Result<()> {
-    let world_gen = random_scene();
     // render
     let mut f = BufWriter::new(File::create("image.ppm")?);
 
@@ -163,7 +162,7 @@ fn main() -> io::Result<()> {
                 dist_to_focus,
             );
 
-            let mut world = world_gen.clone();
+            let mut world = random_scene();
             (0..IMAGE_WIDTH)
                 .map(move |i| {
                     let mut pixel_color = Vec3::new(0.0, 0.0, 0.0);
