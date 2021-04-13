@@ -71,11 +71,10 @@ fn random_scene() -> World {
         Box::new(Lambertian::new(Color::new(0.5, 0.5, 0.5))),
     )));
 
-    let mut uniform = RandUniform::fixed_seed();
+    let mut uniform = RandUniform::from_seed(0);
 
     for a in -11..11 {
         for b in -11..11 {
-            let choose_mat = uniform.gen();
             let center = Point3::new(
                 a as f64 + 0.9 * uniform.gen(),
                 0.2,
@@ -83,9 +82,11 @@ fn random_scene() -> World {
             );
 
             if (&center - Point3::new(4.0, 0.2, 0.0)).length() > 0.9 {
+                let choose_mat = uniform.gen();
                 if choose_mat < 0.8 {
                     // diffuse
-                    let albedo = Color::random() * Color::random();
+                    let albedo = Color::new(uniform.gen(), uniform.gen(), uniform.gen())
+                        * Color::new(uniform.gen(), uniform.gen(), uniform.gen());
                     world.push(Box::new(Sphere::new(
                         center.clone(),
                         0.2,
@@ -93,7 +94,11 @@ fn random_scene() -> World {
                     )));
                 } else if choose_mat < 0.95 {
                     // metal
-                    let albedo = Color::random(); // TODO:
+                    let albedo = Color::new(
+                        0.5 * uniform.gen() + 0.5,
+                        0.5 * uniform.gen() + 0.5,
+                        0.5 * uniform.gen() + 0.5,
+                    );
                     world.push(Box::new(Sphere::new(
                         center.clone(),
                         0.2,
@@ -147,18 +152,19 @@ fn main() -> io::Result<()> {
         .map(|&j| {
             let mut rand_uniform = rand::RandUniform::new();
 
-            let lookfrom = Point3::new(3.0, 3.0, 2.0);
+            let lookfrom = Point3::new(13.0, 3.0, 2.0);
             let lookat = Point3::new(0.0, 0.0, -1.0);
             let vup = Point3::new(0.0, 1.0, 0.0);
-            let dist_to_focus = (&lookfrom - &lookat).length();
+            let aperture = 0.1;
+            let dist_to_focus = 10.0;
 
             let mut camera = Camera::new(
                 lookfrom,
                 lookat,
                 vup,
-                Degree::new(40.0),
+                Degree::new(20.0),
                 ASPECT_RATIO,
-                2.0,
+                aperture,
                 dist_to_focus,
             );
 
