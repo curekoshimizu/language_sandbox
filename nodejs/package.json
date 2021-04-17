@@ -7,7 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "ts-node src",
     "dev:watch": "npx ts-node-dev --poll --respawn -- src/index.ts",
-    "lint": "eslint src/**/*.ts",
+    "lint": "npx tsc --noEmit && eslint src/**/*.ts",
     "lint:fix": "npm run lint --- --fix"
   },
   "author": "curekoshimizu",
