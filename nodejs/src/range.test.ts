@@ -19,7 +19,6 @@ test('count', () => {
   expect(gen.next().value).toBe(3);
 
   let sum = 0;
-  /* eslint no-restricted-syntax: off */
   for (const x of counter()) {
     if (x > 3) {
       break;

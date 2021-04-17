@@ -41,7 +41,6 @@ async function* genNumbers(): AsyncGenerator<number> {
 
 test('async generator', async () => {
   let sum = 0;
-  /* eslint no-restricted-syntax: off */
   for await (const x of genNumbers()) {
     sum += x;
   }
