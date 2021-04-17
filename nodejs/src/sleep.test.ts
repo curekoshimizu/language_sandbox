@@ -17,14 +17,33 @@ test('sleep / nodejs elapsed time', async () => {
   expect(elapsedTime[1]).toBeLessThan(12 * 1000000);
 });
 
-const lazyAdd = async (x: number, y: number):Promise<number> => {
-  await sleep(10);
+const lazyAdd = async (x: number, y: number, msec: number = 10):Promise<number> => {
+  await sleep(msec);
 
   return x + y;
 };
 
 test('async gather', async () => {
-  const [x, y] = await Promise.all([lazyAdd(1, 1), lazyAdd(1, 2)]);
+  const [x, y] = await Promise.all([lazyAdd(1, 1, 10), lazyAdd(1, 2)]);
   const ret = await lazyAdd(x, y);
   expect(ret).toBe(5);
+});
+
+/* eslint func-style: off */
+async function* genNumbers(): AsyncGenerator<number> {
+  await sleep(10);
+  yield 1;
+  await sleep(10);
+  yield 2;
+  await sleep(10);
+  yield 3;
+}
+
+test('async generator', async () => {
+  let sum = 0;
+  /* eslint no-restricted-syntax: off */
+  for await (const x of genNumbers()) {
+    sum += x;
+  }
+  expect(sum).toBe(6);
 });
