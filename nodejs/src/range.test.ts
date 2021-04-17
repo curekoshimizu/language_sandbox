@@ -1,4 +1,4 @@
-import range from './range';
+import range, { counter } from './range';
 
 test('range', () => {
   const array = range(5);
@@ -9,4 +9,22 @@ test('range', () => {
   squared.forEach((x, i) => {
     expect(i * i).toBe(x);
   });
+});
+
+test('count', () => {
+  const gen = counter();
+  expect(gen.next().value).toBe(0);
+  expect(gen.next().value).toBe(1);
+  expect(gen.next().value).toBe(2);
+  expect(gen.next().value).toBe(3);
+
+  let sum = 0;
+  /* eslint no-restricted-syntax: off */
+  for (const x of counter()) {
+    if (x > 3) {
+      break;
+    }
+    sum += x;
+  }
+  expect(sum).toBe(6);
 });
