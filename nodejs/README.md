@@ -1,4 +1,6 @@
-# How did I initialize this project?
+# nodejs sandbox
+
+## How did I initialize this project?
 
 ```
 npm init
@@ -8,10 +10,18 @@ npx tsc --init
 
 then, edit tsconfig.json
 
-# How to execute
+## How to execute
 
 `npm run dev` or `npx ts-node src/index.ts`
 
-(watch mode)
+watch mode (hot reload)
 
 `npm run dev:watch` or `npx npx ts-node-dev (--poll) --respawn -- src/index.ts`
+
+
+## How to introduce eslint
+
+```
+npm i -D eslint
+npx eslint --init
+```
