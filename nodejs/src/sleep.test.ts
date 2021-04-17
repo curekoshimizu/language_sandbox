@@ -4,17 +4,17 @@ test('sleep / date', async () => {
   const startTime = new Date().getTime();
   await sleep(100);
   const elapsedTime = new Date().getTime() - startTime;
-  expect(elapsedTime).toBeGreaterThanOrEqual(100);
+  expect(elapsedTime).toBeGreaterThanOrEqual(99);
   expect(elapsedTime).toBeLessThan(120);
 });
 
 test('sleep / nodejs elapsed time', async () => {
   const startTime = process.hrtime();
-  await sleep(10);
+  await sleep(50);
   const elapsedTime = process.hrtime(startTime); // [sec, nano]
   expect(elapsedTime[0]).toBe(0);
-  expect(elapsedTime[1]).toBeGreaterThan(10 * 1000000);
-  expect(elapsedTime[1]).toBeLessThan(12 * 1000000);
+  expect(elapsedTime[1]).toBeGreaterThan(50 * 1000000);
+  expect(elapsedTime[1]).toBeLessThan(52 * 1000000);
 });
 
 const lazyAdd = async (x: number, y: number, msec: number = 10):Promise<number> => {
