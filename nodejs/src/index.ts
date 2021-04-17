@@ -1,4 +1,4 @@
-import add from './add';
+import add from './add_promise';
 
 const hello = (name: string): string => `Hello, ${name}!`;
 
