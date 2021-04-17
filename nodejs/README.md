@@ -25,3 +25,9 @@ watch mode (hot reload)
 npm i -D eslint
 npx eslint --init
 ```
+
+## How to introduce jest
+
+```
+npm i -D jest @types/jest ts-jest -D
+```
