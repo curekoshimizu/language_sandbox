@@ -26,8 +26,12 @@ npm i -D eslint
 npx eslint --init
 ```
 
+setting file: `.eslintrc.json`
+
 ## How to introduce jest
 
 ```
 npm i -D jest @types/jest ts-jest -D
 ```
+
+setting file: `jest.config.js`
