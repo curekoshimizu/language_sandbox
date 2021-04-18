@@ -45,6 +45,38 @@ describe('write data only once then read (string data)', () => {
 });
 
 describe('write data 10000 times then read', () => {
+  it('async bytes', async () => {
+    const temp = await AsyncTempDir.new();
+    const count = 10000;
+
+    await using(temp, async () => {
+      const fname = path.join(temp.tempDir(), 'file.txt');
+
+      const bufferFromString = (str: string): Buffer => {
+        const buffer = Buffer.alloc(str.length);
+        buffer.write(str);
+
+        return buffer;
+      };
+
+      const origin = 'parrot parrot ';
+      const data = bufferFromString(origin);
+
+      await new Promise<void>((resolve) => {
+        const stream = fs.createWriteStream(fname);
+        stream.on('finish', () => {
+          resolve();
+        });
+        [...Array(count)].forEach(() => {
+          stream.write(data);
+        });
+        stream.end(); // to flush
+      });
+
+      const readData = await fs.promises.readFile(fname);
+      expect(readData).toEqual(bufferFromString(origin.repeat(count)));
+    });
+  });
   it('async string', async () => {
     const temp = await AsyncTempDir.new();
     const count = 10000;
