@@ -12,10 +12,6 @@ describe('pathlib test', () => {
     );
     try {
       expect(fs.existsSync(tempDir)).toBeTruthy();
-
-      console.log('body');
-
-      expect(5).toBe(3);
     } finally {
       fs.rmdirSync(tempDir, { recursive: true });
       expect(fs.existsSync(tempDir)).toBeFalsy();
