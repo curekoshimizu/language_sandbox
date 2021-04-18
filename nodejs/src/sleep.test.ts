@@ -1,4 +1,4 @@
-import sleep from './sleep';
+import sleep, { sleep2 } from './sleep';
 
 describe('sleep test', () => {
   it('sleep / date', async () => {
@@ -9,15 +9,34 @@ describe('sleep test', () => {
     expect(elapsedTime).toBeLessThan(120);
   });
 
+  it('sleep 2 / date', async () => {
+    const startTime = new Date().getTime();
+    await sleep2(100);
+    const elapsedTime = new Date().getTime() - startTime;
+    expect(elapsedTime).toBeGreaterThanOrEqual(99);
+    expect(elapsedTime).toBeLessThan(120);
+  });
+
   it('sleep / nodejs elapsed time', async () => {
     const startTime = process.hrtime();
     await sleep(50);
     const elapsedTime = process.hrtime(startTime); // [sec, nano]
     expect(elapsedTime[0]).toBe(0);
-    expect(elapsedTime[1]).toBeGreaterThan(50 * 1000000);
+    expect(elapsedTime[1]).toBeGreaterThan(49 * 1000000);
     expect(elapsedTime[1]).toBeLessThan(52 * 1000000);
   });
 
+  it('sleep 2 / nodejs elapsed time', async () => {
+    const startTime = process.hrtime();
+    await sleep2(50);
+    const elapsedTime = process.hrtime(startTime); // [sec, nano]
+    expect(elapsedTime[0]).toBe(0);
+    expect(elapsedTime[1]).toBeGreaterThan(49 * 1000000);
+    expect(elapsedTime[1]).toBeLessThan(52 * 1000000);
+  });
+});
+
+describe('async test', () => {
   const lazyAdd = async (x: number, y: number, msec: number = 10):Promise<number> => {
     await sleep(msec);
 
