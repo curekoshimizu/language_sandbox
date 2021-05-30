@@ -1,7 +1,6 @@
 import { useState } from 'react';
 
-import { createMuiTheme } from '@material-ui/core';
-import Button from '@material-ui/core/Button';
+import { Button, Container, createMuiTheme } from '@material-ui/core';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import {
   ThemeProvider as MaterialThemeProvider,
@@ -11,6 +10,7 @@ import styled, {
   ThemeProvider as StyledThemeProvider,
 } from 'styled-components';
 
+import AppBar from './AppBar';
 import TypographyTemplate from './TypographyTemplate';
 
 const StyledButton = styled(Button)`
@@ -40,15 +40,22 @@ const App: React.FC = () => {
       <MaterialThemeProvider theme={theme}>
         <StyledThemeProvider theme={theme}>
           <CssBaseline />
-          <div>
-            <TypographyTemplate />
-          </div>
-          <StyledButton color="primary" variant="contained">
-            Contained
-          </StyledButton>
-          <StyledButton color="primary" onClick={() => setDarkMode(!darkMode)}>
-            mode change
-          </StyledButton>
+          <Container>
+            <AppBar />
+
+            <div>
+              <TypographyTemplate />
+            </div>
+            <StyledButton color="primary" variant="contained">
+              Contained
+            </StyledButton>
+            <StyledButton
+              color="primary"
+              onClick={() => setDarkMode(!darkMode)}
+            >
+              mode change
+            </StyledButton>
+          </Container>
         </StyledThemeProvider>
       </MaterialThemeProvider>
     </StylesProvider>
