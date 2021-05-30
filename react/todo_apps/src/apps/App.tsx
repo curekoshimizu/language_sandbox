@@ -11,6 +11,7 @@ import { ThemeProvider as StyledThemeProvider } from 'styled-components';
 
 import AppBar, { Links } from './AppBar';
 import Button from './Button';
+import Color from './Color';
 import { store, useAppSelector } from './store';
 import Typography from './Typography';
 
@@ -28,6 +29,7 @@ const AppMain: React.FC = () => {
   const links: Array<Links> = [
     { component: Button, path: '/button', title: 'Button' },
     { component: Typography, path: '/typography', title: 'Typography' },
+    { component: Color, path: '/color', title: 'Color' },
   ];
 
   return (
