@@ -1,6 +1,10 @@
 import { useState } from 'react';
 
-import { Button, Container, createMuiTheme } from '@material-ui/core';
+import {
+  Container,
+  createMuiTheme,
+  Button as MaterialUiButton,
+} from '@material-ui/core';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import {
   ThemeProvider as MaterialThemeProvider,
@@ -11,9 +15,10 @@ import styled, {
 } from 'styled-components';
 
 import AppBar from './AppBar';
-import TypographyTemplate from './TypographyTemplate';
+import Button from './Button';
+import Typography from './Typography';
 
-const StyledButton = styled(Button)`
+const StyledButton = styled(MaterialUiButton)`
   font-size: 2em;
   margin: 1em;
   padding: 0.25em 1em;
@@ -43,9 +48,8 @@ const App: React.FC = () => {
           <Container>
             <AppBar />
 
-            <div>
-              <TypographyTemplate />
-            </div>
+            <Typography />
+            <Button />
             <StyledButton color="primary" variant="contained">
               Contained
             </StyledButton>
