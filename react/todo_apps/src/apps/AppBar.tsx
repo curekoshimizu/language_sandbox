@@ -1,3 +1,5 @@
+import { useHistory } from 'react-router-dom';
+
 import AppBar from '@material-ui/core/AppBar';
 import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
@@ -9,6 +11,12 @@ import MenuIcon from '@material-ui/icons/Menu';
 
 import { actions } from '../reducers/themeSlice';
 import { useAppDispatch } from './store';
+
+export interface Links {
+  component: React.FC;
+  path: string;
+  title: string;
+}
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -24,9 +32,14 @@ const useStyles = makeStyles((theme: Theme) =>
   })
 );
 
-export default (() => {
+interface AppBarProps {
+  links: Array<Links>;
+}
+
+export default (({ links }) => {
   const classes = useStyles();
   const dispatch = useAppDispatch();
+  const history = useHistory();
 
   return (
     <div className={classes.root}>
@@ -36,14 +49,17 @@ export default (() => {
             <MenuIcon />
           </IconButton>
           <Typography className={classes.title} variant="h6">
-            News
+            {links.map((link) => (
+              <Button key={link.path} onClick={() => history.push(link.path)}>
+                {link.title}
+              </Button>
+            ))}
           </Typography>
           <IconButton onClick={() => dispatch(actions.changeTheme())}>
             <Brightness4Icon />
           </IconButton>
-          <Button color="inherit">Login</Button>
         </Toolbar>
       </AppBar>
     </div>
   );
-}) as React.FC;
+}) as React.FC<AppBarProps>;
