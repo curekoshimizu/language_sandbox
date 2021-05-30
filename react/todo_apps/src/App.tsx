@@ -1,23 +1,37 @@
-import logo from './logo.svg';
-import './App.scss';
+import { createMuiTheme } from '@material-ui/core';
+import {
+  ThemeProvider as MaterialThemeProvider,
+  StylesProvider,
+} from '@material-ui/styles';
+import styled, {
+  ThemeProvider as StyledThemeProvider,
+} from 'styled-components';
+
+const theme = createMuiTheme({
+  palette: {
+    primary: {
+      main: '#8BC34A',
+      dark: '#689F38',
+      light: '#DCEDC8',
+    },
+    secondary: {
+      main: '#FF5722',
+    },
+    text: {
+      primary: '#212121',
+      secondary: '#757575',
+    },
+  },
+});
 
 const App: React.FC = () => (
-  <div className="App">
-    <header className="App-header">
-      <img alt="logo" className="App-logo" src={logo} />
-      <p>
-        Edit <code>src/App.tsx</code> and save to reload.
-      </p>
-      <a
-        className="App-link"
-        href="https://reactjs.org"
-        rel="noopener noreferrer"
-        target="_blank"
-      >
-        Learn React
-      </a>
-    </header>
-  </div>
+  <StylesProvider injectFirst>
+    <MaterialThemeProvider theme={theme}>
+      <StyledThemeProvider theme={theme}>
+        <div>Hello</div>;
+      </StyledThemeProvider>
+    </MaterialThemeProvider>
+  </StylesProvider>
 );
 
 export default App;

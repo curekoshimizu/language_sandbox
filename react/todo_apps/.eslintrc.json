@@ -21,6 +21,7 @@
   ],
   "rules": {
     "prettier/prettier": "error",
+    "import/no-extraneous-dependencies": "off",
     "@typescript-eslint/ban-ts-comment": "off",
     "@typescript-eslint/no-empty-interface": ["error", {
         "allowSingleExtends": true
