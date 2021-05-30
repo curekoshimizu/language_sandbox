@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 import { createMuiTheme } from '@material-ui/core';
 import Button from '@material-ui/core/Button';
 import CssBaseline from '@material-ui/core/CssBaseline';
@@ -9,6 +11,8 @@ import styled, {
   ThemeProvider as StyledThemeProvider,
 } from 'styled-components';
 
+import TypographyTemplate from './TypographyTemplate';
+
 const StyledButton = styled(Button)`
   font-size: 2em;
   margin: 1em;
@@ -16,32 +20,39 @@ const StyledButton = styled(Button)`
   border-radius: 3px;
 `;
 
-const theme = createMuiTheme({
-  palette: {
-    primary: {
-      main: '#fb8a8a',
+const App: React.FC = () => {
+  const [darkMode, setDarkMode] = useState<boolean>(false);
+  const theme = createMuiTheme({
+    palette: {
+      primary: {
+        main: '#fb8a8a',
+      },
+      text: {
+        primary: '#212121',
+        secondary: '#757575',
+      },
+      type: darkMode ? 'dark' : 'light',
     },
-    text: {
-      primary: '#212121',
-      secondary: '#757575',
-    },
-  },
-});
+  });
 
-const App: React.FC = () => (
-  <StylesProvider injectFirst>
-    <MaterialThemeProvider theme={theme}>
-      <StyledThemeProvider theme={theme}>
-        <CssBaseline />
-        <h1>Hello</h1>
-        <h2>Hello h2</h2>
-        <StyledButton color="primary" variant="contained">
-          Contained
-        </StyledButton>
-        <StyledButton color="primary">Default</StyledButton>
-      </StyledThemeProvider>
-    </MaterialThemeProvider>
-  </StylesProvider>
-);
+  return (
+    <StylesProvider injectFirst>
+      <MaterialThemeProvider theme={theme}>
+        <StyledThemeProvider theme={theme}>
+          <CssBaseline />
+          <div>
+            <TypographyTemplate />
+          </div>
+          <StyledButton color="primary" variant="contained">
+            Contained
+          </StyledButton>
+          <StyledButton color="primary" onClick={() => setDarkMode(!darkMode)}>
+            mode change
+          </StyledButton>
+        </StyledThemeProvider>
+      </MaterialThemeProvider>
+    </StylesProvider>
+  );
+};
 
 export default App;
