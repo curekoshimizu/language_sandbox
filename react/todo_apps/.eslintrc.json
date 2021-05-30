@@ -51,9 +51,6 @@
     "react/destructuring-assignment": ["warn", "always", {
       "ignoreClassFields": true
     }],
-    "react/jsx-max-props-per-line": ["error", {
-      "maximum": 3
-    }],
     "react/jsx-props-no-spreading": ["error", {
       "custom": "ignore"
     }],

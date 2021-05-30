@@ -12,6 +12,7 @@ import { ThemeProvider as StyledThemeProvider } from 'styled-components';
 import AppBar, { Links } from './AppBar';
 import Button from './Button';
 import Color from './Color';
+import Size from './Size';
 import { store, useAppSelector } from './store';
 import Typography from './Typography';
 
@@ -30,6 +31,7 @@ const AppMain: React.FC = () => {
     { component: Button, path: '/button', title: 'Button' },
     { component: Typography, path: '/typography', title: 'Typography' },
     { component: Color, path: '/color', title: 'Color' },
+    { component: Size, path: '/size', title: 'Size' },
   ];
 
   return (
