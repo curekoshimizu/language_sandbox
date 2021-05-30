@@ -19,12 +19,7 @@ const StyledButton = styled(Button)`
 const theme = createMuiTheme({
   palette: {
     primary: {
-      main: '#8BC34A',
-      dark: '#689F38',
-      light: '#DCEDC8',
-    },
-    secondary: {
-      main: '#FF5722',
+      main: '#fb8a8a',
     },
     text: {
       primary: '#212121',
@@ -38,10 +33,12 @@ const App: React.FC = () => (
     <MaterialThemeProvider theme={theme}>
       <StyledThemeProvider theme={theme}>
         <CssBaseline />
+        <h1>Hello</h1>
+        <h2>Hello h2</h2>
         <StyledButton color="primary" variant="contained">
-          Default
+          Contained
         </StyledButton>
-        <div>Hello</div>
+        <StyledButton color="primary">Default</StyledButton>
       </StyledThemeProvider>
     </MaterialThemeProvider>
   </StylesProvider>
