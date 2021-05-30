@@ -7,6 +7,9 @@ import Typography from '@material-ui/core/Typography';
 import Brightness4Icon from '@material-ui/icons/Brightness4';
 import MenuIcon from '@material-ui/icons/Menu';
 
+import { actions } from '../reducers/themeSlice';
+import { useAppDispatch } from './store';
+
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     root: {
@@ -23,6 +26,7 @@ const useStyles = makeStyles((theme: Theme) =>
 
 export default (() => {
   const classes = useStyles();
+  const dispatch = useAppDispatch();
 
   return (
     <div className={classes.root}>
@@ -34,7 +38,7 @@ export default (() => {
           <Typography className={classes.title} variant="h6">
             News
           </Typography>
-          <IconButton aria-label="mode" color="inherit" edge="end">
+          <IconButton onClick={() => dispatch(actions.changeTheme())}>
             <Brightness4Icon />
           </IconButton>
           <Button color="inherit">Login</Button>
