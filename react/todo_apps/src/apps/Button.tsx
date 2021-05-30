@@ -10,7 +10,7 @@ export default (() => {
   return (
     <>
       {variants.map((variant) => (
-        <div>
+        <div key={variant}>
           <Button variant={variant}>Default</Button>
           <Button color="primary" variant={variant}>
             primary

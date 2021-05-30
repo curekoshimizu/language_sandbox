@@ -39,7 +39,13 @@ const AppMain: React.FC = () => {
             <AppBar links={links} />
             <Switch>
               {links.map((link) => {
-                return <Route component={link.component} path={link.path} />;
+                return (
+                  <Route
+                    component={link.component}
+                    key={link.title}
+                    path={link.path}
+                  />
+                );
               })}
               <Redirect exact from="/" to={links[0].path} />
             </Switch>
