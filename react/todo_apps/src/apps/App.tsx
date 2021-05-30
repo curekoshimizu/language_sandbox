@@ -41,18 +41,24 @@ const AppMain: React.FC = () => {
           <CssBaseline />
           <Container>
             <AppBar links={links} />
-            <Switch>
-              {links.map((link) => {
-                return (
-                  <Route
-                    component={link.component}
-                    key={link.title}
-                    path={link.path}
-                  />
-                );
-              })}
-              <Redirect exact from="/" to={links[0].path} />
-            </Switch>
+            <main
+              style={{
+                padding: theme.spacing(2),
+              }}
+            >
+              <Switch>
+                {links.map((link) => {
+                  return (
+                    <Route
+                      component={link.component}
+                      key={link.title}
+                      path={link.path}
+                    />
+                  );
+                })}
+                <Redirect exact from="/" to={links[0].path} />
+              </Switch>
+            </main>
           </Container>
         </StyledThemeProvider>
       </MaterialThemeProvider>
