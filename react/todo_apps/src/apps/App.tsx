@@ -32,10 +32,6 @@ const App: React.FC = () => {
       primary: {
         main: '#fb8a8a',
       },
-      text: {
-        primary: '#212121',
-        secondary: '#757575',
-      },
       type: darkMode ? 'dark' : 'light',
     },
   });
