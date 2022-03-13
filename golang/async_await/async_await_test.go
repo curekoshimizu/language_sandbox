@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/curekoshimizu/language_sandbox/golang/thread_resource"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -14,28 +15,29 @@ func BlockSleep(msec int) int {
 }
 
 func TestAsyncAwait(t *testing.T) {
-	now := time.Now()
-
-	msec := 100
+	event := thread_resource.NewEvent()
 	future := Async(func() interface{} {
-		return BlockSleep(msec)
+		event.Wait(context.Background())
+		return true
 	})
 	defer future.Close()
-	val := future.Await(context.Background()).(int)
-	assert.Equal(t, val, msec)
 
-	ans := time.Since(now).Milliseconds()
-	expect := int64(msec) * 90 / 100 // 90%
-	assert.True(t, ans > expect, "expect :  %v > %v", ans, expect)
+	go func() {
+		BlockSleep(100)
+		event.Set()
+	}()
+
+	ret := future.Await(context.Background()).(bool)
+	assert.True(t, ret)
+	assert.True(t, event.IsSet())
 }
 
 func TestTimeoutAsyncAwait(t *testing.T) {
-	now := time.Now()
-
-	sleepTime := 500
+	event := thread_resource.NewEvent()
 	timeout := 100
 	future := Async(func() interface{} {
-		return BlockSleep(sleepTime)
+		event.Wait(context.Background())
+		return true
 	})
 	defer future.Close()
 
@@ -43,33 +45,26 @@ func TestTimeoutAsyncAwait(t *testing.T) {
 		context.Background(), time.Duration(timeout)*time.Millisecond)
 	defer cancel()
 
-	_, ok := future.Await(context).(int)
+	_, ok := future.Await(context).(bool)
 	assert.Equal(t, ok, false)
 	_, ok = future.Await(context).(error)
 	assert.Equal(t, ok, true)
 
-	ans := time.Since(now).Milliseconds()
-	expect := int64(timeout) * 90 / 100 // 90%
-	assert.True(t, ans > expect, "expect :  %v > %v", ans, expect)
+	event.Set()
 }
 
 func TestClose(t *testing.T) {
-	sleepTime := 500
-	timeout := 100
+	event := thread_resource.NewEvent()
 	future := Async(func() interface{} {
-		return BlockSleep(sleepTime)
+		BlockSleep(100)
+		event.Set()
+		return true
 	})
-	defer func() {
-		now := time.Now()
-		future.Close()
 
-		ans := time.Since(now).Milliseconds()
-		expect := int64(timeout) * 90 / 100 // 90%
-		assert.True(t, ans > expect, "expect :  %v > %v", ans, expect)
+	assert.False(t, event.IsSet())
+	future.Close()
+	assert.True(t, event.IsSet())
 
-		val, ok := future.Await(context.Background()).(int)
-		assert.Equal(t, ok, true)
-		assert.Equal(t, val, sleepTime)
-	}()
-	BlockSleep(timeout)
+	_, ok := future.Await(context.Background()).(bool)
+	assert.Equal(t, ok, true)
 }
