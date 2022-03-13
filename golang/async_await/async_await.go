@@ -1,36 +1,34 @@
 package async_await
 
-import "context"
+import (
+	"context"
+)
 
-// Future interface has the method signature for await
-type Future interface {
-	Await() interface{}
+type Future struct {
+	Await func(ctx context.Context) interface{}
+	Close func()
 }
 
-type future struct {
-	await func(ctx context.Context) interface{}
-}
-
-func (f future) Await() interface{} {
-	return f.await(context.Background())
-}
-
-// Exec executes the async function
-func Exec(f func() interface{}) Future {
+func Async(f func() interface{}) Future {
 	var result interface{}
-	c := make(chan struct{})
+	hasFutureFinished := make(chan struct{})
 	go func() {
-		defer close(c)
-		result = f()
+		defer close(hasFutureFinished)
+		result = f() // context を渡せるようにすべき
 	}()
-	return future{
-		await: func(ctx context.Context) interface{} {
+	future := Future{
+		Await: func(ctx context.Context) interface{} {
 			select {
+			case <-hasFutureFinished:
+				return result
 			case <-ctx.Done():
 				return ctx.Err()
-			case <-c:
-				return result
 			}
 		},
+		Close: func() {
+			<-hasFutureFinished
+		},
 	}
+
+	return future
 }
