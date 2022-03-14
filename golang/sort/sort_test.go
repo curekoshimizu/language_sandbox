@@ -31,6 +31,10 @@ func TestSortTime(t *testing.T) {
 	})
 
 	// check
+	// slice[0] is older than slice[length-1]
+	// example.
+	//   slice[0]        : 2000-01-08 06:27:00 +0900 JST
+	//   slice[length-1] : 2000-02-02 02:18:39 +0900 JST
 	assert.True(t, slice[0].Before(slice[length-1]))
 }
 
