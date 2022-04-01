@@ -16,7 +16,7 @@ func BlockSleep(msec int) int {
 
 func TestAsyncAwait(t *testing.T) {
 	event := thread_resource.NewEvent()
-	future := Async(func() interface{} {
+	future := Async(func() bool {
 		event.Wait(context.Background())
 		return true
 	})
@@ -27,15 +27,16 @@ func TestAsyncAwait(t *testing.T) {
 		event.Set()
 	}()
 
-	ret := future.Await(context.Background()).(bool)
+	ret, err := future.Await(context.Background())
 	assert.True(t, ret)
+	assert.Nil(t, err)
 	assert.True(t, event.IsSet())
 }
 
 func TestTimeoutAsyncAwait(t *testing.T) {
 	event := thread_resource.NewEvent()
 	timeout := 100
-	future := Async(func() interface{} {
+	future := Async(func() bool {
 		event.Wait(context.Background())
 		return true
 	})
@@ -45,17 +46,15 @@ func TestTimeoutAsyncAwait(t *testing.T) {
 		context.Background(), time.Duration(timeout)*time.Millisecond)
 	defer cancel()
 
-	_, ok := future.Await(context).(bool)
-	assert.Equal(t, ok, false)
-	_, ok = future.Await(context).(error)
-	assert.Equal(t, ok, true)
+	_, err := future.Await(context)
+	assert.NotNil(t, err)
 
 	event.Set()
 }
 
 func TestClose(t *testing.T) {
 	event := thread_resource.NewEvent()
-	future := Async(func() interface{} {
+	future := Async(func() bool {
 		BlockSleep(100)
 		event.Set()
 		return true
@@ -65,6 +64,6 @@ func TestClose(t *testing.T) {
 	future.Close()
 	assert.True(t, event.IsSet())
 
-	_, ok := future.Await(context.Background()).(bool)
-	assert.Equal(t, ok, true)
+	_, err := future.Await(context.Background())
+	assert.Nil(t, err)
 }

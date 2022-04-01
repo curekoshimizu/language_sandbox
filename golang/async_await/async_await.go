@@ -4,25 +4,25 @@ import (
 	"context"
 )
 
-type Future struct {
-	Await func(ctx context.Context) interface{}
+type Future[T any] struct {
+	Await func(ctx context.Context) (T, error)
 	Close func()
 }
 
-func Async(f func() interface{}) Future {
-	var result interface{}
+func Async[T any](f func() T) Future[T] {
+	var result T
 	hasFutureFinished := make(chan struct{})
 	go func() {
 		defer close(hasFutureFinished)
 		result = f() // context を渡せるようにすべき
 	}()
-	future := Future{
-		Await: func(ctx context.Context) interface{} {
+	future := Future[T]{
+		Await: func(ctx context.Context) (T, error) {
 			select {
 			case <-hasFutureFinished:
-				return result
+				return result, nil
 			case <-ctx.Done():
-				return ctx.Err()
+				return result, ctx.Err()
 			}
 		},
 		Close: func() {
