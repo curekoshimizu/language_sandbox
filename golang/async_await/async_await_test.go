@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/barweiss/go-tuple"
 	"github.com/curekoshimizu/language_sandbox/golang/thread_resource"
 	"github.com/stretchr/testify/assert"
 )
@@ -66,4 +67,20 @@ func TestClose(t *testing.T) {
 
 	_, err := future.Await(context.Background())
 	assert.Nil(t, err)
+}
+
+func TestTuple(t *testing.T) {
+	f := func() (int, string) {
+		return 1, "a"
+	}
+	future := Async(func() tuple.T2[int, string]{
+		return tuple.New2(f())
+	})
+    defer future.Close()
+    val, err := future.Await(context.Background())
+    if err != nil {
+        intVal, strVal := val.Values()
+        assert.Equal(t, intVal, 1)
+        assert.Equal(t, strVal, "a")
+    }
 }
