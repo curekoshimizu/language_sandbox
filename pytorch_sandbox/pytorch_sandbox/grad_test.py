@@ -31,6 +31,8 @@ def test_call_backward(save_graph: bool = False) -> None:
 
 
 def test_grad() -> None:
+    torch.manual_seed(123)
+
     sample_data = np.array(
         [
             [166, 58.7],
@@ -44,11 +46,11 @@ def test_grad() -> None:
     x_origin = sample_data[:, 0]
     y_origin = sample_data[:, 1]
 
-    x = torch.tensor((x_origin - x_origin.mean()) / x_origin.std()).float()
-    y = torch.tensor((y_origin - y_origin.mean()) / y_origin.std()).float()
+    x = torch.tensor((x_origin - x_origin.mean()) / x_origin.std())
+    y = torch.tensor((y_origin - y_origin.mean()) / y_origin.std())
 
-    a = torch.tensor(1.0, requires_grad=True).float()
-    b = torch.tensor(1.0, requires_grad=True).float()
+    a = torch.tensor(1.0, requires_grad=True)
+    b = torch.tensor(1.0, requires_grad=True)
 
     def pred(x: torch.Tensor) -> torch.Tensor:
         return a * x + b
@@ -71,4 +73,4 @@ def test_grad() -> None:
         if epoch % 100 == 0:
             print(f"epoch : {epoch}, loss : {loss}")
 
-    assert loss < 0.12
+    assert 0.1 < loss < 0.12
