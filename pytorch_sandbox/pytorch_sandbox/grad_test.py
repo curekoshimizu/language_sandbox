@@ -1,5 +1,3 @@
-from typing import cast
-
 import numpy as np
 import torch
 from torch import nn
@@ -50,21 +48,16 @@ def test_grad() -> None:
     x = torch.tensor((x_origin - x_origin.mean()) / x_origin.std()).float().reshape(-1, 1)
     y = torch.tensor((y_origin - y_origin.mean()) / y_origin.std()).float().reshape(-1, 1)
 
-    l = nn.Linear(1, 1)
-    nn.init.constant_(l.weight, 1.0)
-    nn.init.constant_(l.bias, 1.0)
-
-    def mse(y_p: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
-        loss = ((y_p - y) ** 2).mean()
-        return cast(torch.Tensor, loss)
+    l1 = nn.Linear(1, 1)
+    criterion = nn.MSELoss()
 
     num_epochs = 500
-    optimizer = SGD(l.parameters(), lr=0.001, momentum=0.9)
+    optimizer = SGD(l1.parameters(), lr=0.001, momentum=0.9)
 
     for epoch in range(num_epochs):
-        y_p = l(x)
-        loss = mse(y_p, y)
-        loss.backward()  # type: ignore
+        y_p = l1(x)
+        loss = criterion(y_p, y)
+        loss.backward()
 
         optimizer.step()
         optimizer.zero_grad()
@@ -72,6 +65,6 @@ def test_grad() -> None:
         if epoch % 100 == 0:
             print(f"epoch : {epoch}, loss : {loss}")
 
-    for name, tensor in l.named_parameters():
+    for name, tensor in l1.named_parameters():
         print(name, tensor, tensor.shape)
     assert 0.1 < loss < 0.12
