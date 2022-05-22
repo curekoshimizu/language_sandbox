@@ -1,5 +1,8 @@
+from typing import cast
+
 import numpy as np
 import torch
+from torch.optim import SGD
 from torchviz import make_dot
 
 
@@ -25,3 +28,47 @@ def test_call_backward(save_graph: bool = False) -> None:
             )
         )
         x.grad.zero_()
+
+
+def test_grad() -> None:
+    sample_data = np.array(
+        [
+            [166, 58.7],
+            [176, 75.7],
+            [171, 62.1],
+            [173, 70.4],
+            [169, 60.1],
+        ]
+    )
+
+    x_origin = sample_data[:, 0]
+    y_origin = sample_data[:, 1]
+
+    x = torch.tensor((x_origin - x_origin.mean()) / x_origin.std()).float()
+    y = torch.tensor((y_origin - y_origin.mean()) / y_origin.std()).float()
+
+    a = torch.tensor(1.0, requires_grad=True).float()
+    b = torch.tensor(1.0, requires_grad=True).float()
+
+    def pred(x: torch.Tensor) -> torch.Tensor:
+        return a * x + b
+
+    def mse(y_p: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
+        loss = ((y_p - y) ** 2).mean()
+        return cast(torch.Tensor, loss)
+
+    num_epochs = 500
+    optimizer = SGD([a, b], lr=0.001, momentum=0.9)
+
+    for epoch in range(num_epochs):
+        y_p = pred(x)
+        loss = mse(y_p, y)
+        loss.backward()  # type: ignore
+
+        optimizer.step()
+        optimizer.zero_grad()
+
+        if epoch % 100 == 0:
+            print(f"epoch : {epoch}, loss : {loss}")
+
+    assert loss < 0.12
