@@ -51,7 +51,8 @@ def test_boston_prediction(save: bool = False) -> None:
     assert inputs.shape == (506, 1)
     assert labels.shape == (506, 1)
 
-    num_epochs = 10000
+    prev_loss = 0.0
+    num_epochs = 50000
     for epoch in range(num_epochs):
         optimizer.zero_grad()
         outputs = net(inputs)
@@ -62,7 +63,11 @@ def test_boston_prediction(save: bool = False) -> None:
         if epoch % 100 == 0:
             assert isinstance(loss, torch.Tensor) and loss.ndim == 0
             # that's why we need to call .item()
-            print("epoch : ", loss.item())
+            current_loss = loss.item()
+            print("epoch : ", epoch, "loss", current_loss)
+            if abs(prev_loss - current_loss) < 1.0e-7:
+                break
+            prev_loss = current_loss
 
     # display current setting
     show_params()
