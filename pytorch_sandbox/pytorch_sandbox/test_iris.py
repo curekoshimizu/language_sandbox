@@ -10,16 +10,14 @@ class Net(nn.Module):
     def __init__(self) -> None:
         super().__init__()
         self.l1 = nn.Linear(in_features=2, out_features=1)
-        self.sigmoid = nn.Sigmoid()
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        x = self.l1(x)
-        ret = self.sigmoid(x)
+        ret = self.l1(x)
         assert isinstance(ret, torch.Tensor)
         return ret
 
 
-def test_iris_prediction(save: bool = True) -> None:
+def test_iris_prediction(save: bool = False) -> None:
     torch.manual_seed(123)
 
     iris = load_iris()
@@ -43,7 +41,7 @@ def test_iris_prediction(save: bool = True) -> None:
     )
 
     net = Net()
-    criterion = nn.BCELoss()
+    criterion = nn.BCEWithLogitsLoss()
     optimizer = optim.SGD(net.parameters(), lr=0.01)
 
     inputs = torch.tensor(x_train).float()
@@ -60,7 +58,7 @@ def test_iris_prediction(save: bool = True) -> None:
 
     history = []
     prev_loss = 0.0
-    num_epochs = 10000
+    num_epochs = 3000
     for epoch in range(num_epochs):
         # train
         optimizer.zero_grad()
@@ -69,13 +67,13 @@ def test_iris_prediction(save: bool = True) -> None:
         loss.backward()
         optimizer.step()
 
-        predicted = torch.where(outputs < 0.5, 0, 1)
+        predicted = torch.where(outputs < 0.0, 0, 1)
         acc_train = ((predicted == labels1).sum() / len(y_train)).item()
 
         # test
         outputs_test = net(inputs_test)
         loss_test = criterion(outputs_test, labels_test).item()
-        predicted_test = torch.where(outputs_test < 0.5, 0, 1)
+        predicted_test = torch.where(outputs_test < 0.0, 0, 1)
         acc_test = ((predicted_test == labels1_test).sum() / len(y_test)).item()
 
         assert isinstance(loss, torch.Tensor) and loss.ndim == 0
