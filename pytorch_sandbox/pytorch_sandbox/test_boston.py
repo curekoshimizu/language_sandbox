@@ -51,6 +51,7 @@ def test_boston_prediction(save: bool = False) -> None:
     assert inputs.shape == (506, 1)
     assert labels.shape == (506, 1)
 
+    history = []
     prev_loss = 0.0
     num_epochs = 50000
     for epoch in range(num_epochs):
@@ -60,14 +61,15 @@ def test_boston_prediction(save: bool = False) -> None:
         loss.backward()
         optimizer.step()
 
+        assert isinstance(loss, torch.Tensor) and loss.ndim == 0
+        # that's why we need to call .item()
+        current_loss = loss.item()
         if epoch % 100 == 0:
-            assert isinstance(loss, torch.Tensor) and loss.ndim == 0
-            # that's why we need to call .item()
-            current_loss = loss.item()
             print("epoch : ", epoch, "loss", current_loss)
             if abs(prev_loss - current_loss) < 1.0e-7:
                 break
             prev_loss = current_loss
+        history.append(current_loss)
 
     # display current setting
     show_params()
@@ -77,8 +79,18 @@ def test_boston_prediction(save: bool = False) -> None:
         yse = net(xse)
 
     if save:
-        plt.scatter(x, y, s=10, c="blue")  # s: size  # c: color
-        plt.plot(xse.data, yse.data, c="black")
-        plt.savefig("room_price.png")
+        fig = plt.figure()
+
+        fig1 = fig.add_subplot(1, 2, 1)
+
+        fig1.scatter(x, y, s=10, c="blue")  # s: size  # c: color
+        fig1.plot(xse.data, yse.data, c="black")
+
+        start_epoch = 100
+        fig2 = fig.add_subplot(1, 2, 2)
+        fig2.plot(range(1, epoch + 1)[start_epoch:], history[start_epoch:])
+
+        fig.savefig("room_price.png")
 
     assert 43 < loss.item() < 44
+    assert epoch == 23600
