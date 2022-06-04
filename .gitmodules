@@ -1,0 +1,3 @@
+[submodule "pytorch_sandbox/datasets/janken_dataset"]
+	path = pytorch_sandbox/datasets/janken_dataset
+	url = https://github.com/karaage0703/janken_dataset
