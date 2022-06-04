@@ -2,18 +2,12 @@ import enum
 import pathlib
 
 import matplotlib.pyplot as plt
+import torch
 # import numpy as np
 from PIL import Image
-from torch.utils.data import Dataset
+from torch.utils.data import Dataset, random_split
 
 script_path = pathlib.Path(__file__).parent.resolve()
-
-
-def test_save_choki_image() -> None:
-    f = script_path.parents[0] / "datasets" / "janken_dataset" / "choki" / "IMG_0770.JPG"
-    with Image.open(f) as img:
-        plt.imshow(img)
-        plt.savefig("choki.png")
 
 
 class Janken(enum.Enum):
@@ -43,6 +37,7 @@ class JankenDataset(Dataset[tuple[Image.Image, Janken]]):
         return len(self._data)
 
     def __getitem__(self, index: int) -> tuple[Image.Image, Janken]:
+        assert 0 <= index < len(self)
         image_path, label = self._data[index]
 
         image = Image.open(image_path)
@@ -52,6 +47,23 @@ class JankenDataset(Dataset[tuple[Image.Image, Janken]]):
         return image, label
 
 
-def test_dataloader() -> None:
+def test_dataloader(seed: int = 100) -> None:
+    image_dataset = JankenDataset()
+    assert len(image_dataset) == 166
+
+    num_train = int(len(image_dataset) * 0.7)
+    num_valid = len(image_dataset) - num_train
+
+    train_dataset, valid_dataset = random_split(
+        image_dataset, [num_train, num_valid], generator=torch.Generator().manual_seed(seed)
+    )
+    assert len(train_dataset) == num_train
+    assert len(valid_dataset) == num_valid
+
+
+def test_save_image() -> None:
     dataset = JankenDataset()
-    assert len(dataset) == 166
+    img, gu = dataset[0]
+    assert gu == Janken.GU
+    plt.imshow(img)
+    plt.savefig("gu.png")
