@@ -38,7 +38,7 @@ def train(
             train_loss += loss.item()
             train_acc += (pred == labels).sum()
 
-    train_loss /= n_train
+    train_loss /= len(train_dataloader)  # same as train_loss = train_loss * batch_size / n_train
     train_acc /= n_train
 
     return train_loss, train_acc.item()
@@ -70,7 +70,7 @@ def test(
             test_loss += loss.item()
             test_acc += (pred == labels).sum()
 
-    test_loss /= n_test
+    test_loss /= len(test_dataloader)  # same as test_loss = test_loss * batch_size / n_test
     test_acc /= n_test
 
     return test_loss, test_acc.item()

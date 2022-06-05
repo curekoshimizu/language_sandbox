@@ -70,8 +70,6 @@ def test_mnist() -> None:
             criterion,
         )
 
-        train_loss = train_loss * batch_size
-        test_loss = test_loss * batch_size
         print(
             f"Epoch [{epoch+1}/{num_epochs}], loss: {train_loss:.5f} acc: {train_acc:.5f} test_loss: {test_loss:.5f}, test_acc: {test_acc:.5f}"
         )
