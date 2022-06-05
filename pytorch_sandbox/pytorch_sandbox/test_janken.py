@@ -1,12 +1,11 @@
 import matplotlib.pyplot as plt
 import torch
-import torch.nn.functional as F
 from torch import nn, optim
 from torch.utils.data import DataLoader, random_split
 from torch.utils.data.dataset import Subset
 
 from .janken import Janken, JankenDataset, Model
-from .utils import train
+from .utils import test, train
 
 
 def test_dataloader(seed: int = 100) -> None:
@@ -49,9 +48,9 @@ def test_model(seed: int = 100) -> None:
     assert len(test_dataset) == num_valid
     assert isinstance(train_dataset, Subset)
 
-    LEARNING_RATE = 1.0
-    EPOCHS = 20
-    BATCH_SIZE = 4
+    LEARNING_RATE = 0.1
+    num_epochs = 100
+    BATCH_SIZE = 8
 
     train_dataloader = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=1)
     test_dataloader = DataLoader(test_dataset, batch_size=BATCH_SIZE, shuffle=False, num_workers=1)
@@ -62,43 +61,14 @@ def test_model(seed: int = 100) -> None:
     print(model)
     optimizer = optim.Adadelta(model.parameters(), lr=LEARNING_RATE)
 
-    def test(
-        model: Model, device: torch.device, test_dataloader: DataLoader[tuple[torch.Tensor, int]]
-    ) -> tuple[float, float]:
-        model.eval()
-        val_loss = 0.0
-        val_acc = 0.0
-        correct = 0.0
-        total = 0.0
-
-        with torch.no_grad():  # type:ignore
-            for batch_idx, (data, target) in enumerate(test_dataloader):
-                data, target = data.to(device), target.to(device)
-                output = model(data)
-                val_loss += F.nll_loss(output, target).item()
-                pred = output.argmax(dim=1, keepdim=True)
-                correct += pred.eq(target.view_as(pred)).sum().item()
-                total += target.size(0)
-
-        val_loss = val_loss / len(test_dataloader)
-        val_acc = correct / total
-
-        return val_loss, val_acc
-
     criterion = nn.CrossEntropyLoss()
+    history = []
 
-    train_loss_list = []
-
-    val_loss_list = []
-    val_acc_list = []
-
-    for epoch in range(1, EPOCHS + 1):
+    for epoch in range(num_epochs):
         train_loss, train_acc = train(model, device, train_dataloader, optimizer, criterion)
-        val_loss, val_acc = test(model, device, test_dataloader)
+        test_loss, test_acc = test(model, device, test_dataloader, criterion)
 
-        train_loss_list.append(train_loss)
-        val_loss_list.append(val_loss)
-        val_acc_list.append(val_acc)
-
-        print("epoch: {:d}".format(epoch))
-        print("val_loss: {:.4f}, val_acc: {:.4f}".format(100.0 * val_loss, val_acc))
+        print(
+            f"Epoch [{epoch+1}/{num_epochs}], loss: {train_loss:.5f} acc: {train_acc:.5f} test_loss: {test_loss:.5f}, test_acc: {test_acc:.5f}"
+        )
+        history.append(([epoch + 1, train_loss, train_acc, test_loss, test_acc]))

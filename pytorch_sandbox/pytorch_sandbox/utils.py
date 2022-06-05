@@ -28,6 +28,7 @@ def train(
         labels = labels.to(device)
         optimizer.zero_grad()
         outputs = model(inputs)
+        assert outputs.shape[0] == labels.shape[0]
         loss = criterion(outputs, labels)
 
         loss.backward()

@@ -13,9 +13,9 @@ script_path = pathlib.Path(__file__).parent.resolve()
 
 
 class Janken(enum.Enum):
-    GU = 1
-    CHOKI = 2
-    PA = 3
+    GU = 0
+    CHOKI = 1
+    PA = 2
 
 
 class JankenDataset(Dataset[tuple[torch.Tensor, int]]):
@@ -85,5 +85,4 @@ class Model(nn.Module):
         x = F.relu(x)
         x = self.dropout2(x)
         x = self.fc2(x)
-        output = F.log_softmax(x, dim=1)
-        return output
+        return x
