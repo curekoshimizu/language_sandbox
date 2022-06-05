@@ -6,6 +6,7 @@ from torch.utils.data import DataLoader, random_split
 from torch.utils.data.dataset import Subset
 
 from .janken import Janken, JankenDataset, Model
+from .utils import train
 
 
 def test_dataloader(seed: int = 100) -> None:
@@ -60,29 +61,6 @@ def test_model(seed: int = 100) -> None:
     model = Model().to(device)
     print(model)
     optimizer = optim.Adadelta(model.parameters(), lr=LEARNING_RATE)
-
-    def train(
-        model: Model,
-        device: torch.device,
-        train_dataloader: DataLoader[tuple[torch.Tensor, int]],
-        optimizer: optim.Optimizer,
-    ) -> float:
-        train_loss = 0.0
-
-        model.train()
-        for batch_idx, (data, target) in enumerate(train_dataloader):
-            data, target = data.to(device), target.to(device)
-            optimizer.zero_grad()
-            output = model(data)
-            loss = F.nll_loss(output, target)
-            train_loss += loss.item()
-
-            loss.backward()  # type:ignore
-            optimizer.step()
-
-        train_loss /= len(train_dataloader)
-
-        return train_loss
 
     def test(
         model: Model, device: torch.device, test_dataloader: DataLoader[tuple[torch.Tensor, int]]
