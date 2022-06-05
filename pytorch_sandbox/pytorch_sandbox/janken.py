@@ -18,7 +18,7 @@ class Janken(enum.Enum):
     PA = 3
 
 
-class JankenDataset(Dataset[tuple[Image.Image, Janken]]):
+class JankenDataset(Dataset[tuple[torch.Tensor, Janken]]):
     def __init__(
         self,
         input_size: Optional[tuple[int, int]] = None,
