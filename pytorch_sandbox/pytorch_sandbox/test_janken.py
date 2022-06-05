@@ -26,7 +26,7 @@ def test_save_image() -> None:
     dataset = JankenDataset()
     img, gu = dataset[0]
     assert img.shape == (3, 64, 64)
-    assert gu == Janken.GU
+    assert gu == Janken.GU.value
     # How to display torch.Tensor
     # https://stackoverflow.com/questions/53623472/how-do-i-display-a-single-image-in-pytorch
     assert img.permute(1, 2, 0).shape == (64, 64, 3)
@@ -55,7 +55,8 @@ def test_model(seed: int = 100) -> None:
     train_dataloader = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=1)
     test_dataloader = DataLoader(test_dataset, batch_size=BATCH_SIZE, shuffle=False, num_workers=1)
 
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    device = torch.device("cpu")  # TODO: REMOVE
     model = Model().to(device)
     print(model)
     optimizer = optim.Adadelta(model.parameters(), lr=LEARNING_RATE)
@@ -63,7 +64,7 @@ def test_model(seed: int = 100) -> None:
     def train(
         model: Model,
         device: torch.device,
-        train_dataloader: DataLoader[tuple[torch.Tensor, Janken]],
+        train_dataloader: DataLoader[tuple[torch.Tensor, int]],
         optimizer: optim.Optimizer,
     ) -> float:
         train_loss = 0.0
@@ -84,7 +85,7 @@ def test_model(seed: int = 100) -> None:
         return train_loss
 
     def test(
-        model: Model, device: torch.device, test_dataloader: DataLoader[tuple[torch.Tensor, Janken]]
+        model: Model, device: torch.device, test_dataloader: DataLoader[tuple[torch.Tensor, int]]
     ) -> tuple[float, float]:
         model.eval()
         val_loss = 0.0

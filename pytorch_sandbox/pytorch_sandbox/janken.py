@@ -18,7 +18,7 @@ class Janken(enum.Enum):
     PA = 3
 
 
-class JankenDataset(Dataset[tuple[torch.Tensor, Janken]]):
+class JankenDataset(Dataset[tuple[torch.Tensor, int]]):
     def __init__(
         self,
         input_size: Optional[tuple[int, int]] = None,
@@ -30,13 +30,13 @@ class JankenDataset(Dataset[tuple[torch.Tensor, Janken]]):
         choki = root_dir / "choki"
         pa = root_dir / "pa"
 
-        data = []
+        data: list[tuple[pathlib.Path, int, str]] = []
         for d in gu.glob("*.JPG"):
-            data.append((d, Janken.GU))
+            data.append((d, Janken.GU.value, Janken.GU.name))
         for d in choki.glob("*.JPG"):
-            data.append((d, Janken.CHOKI))
+            data.append((d, Janken.CHOKI.value, Janken.CHOKI.name))
         for d in pa.glob("*.JPG"):
-            data.append((d, Janken.PA))
+            data.append((d, Janken.PA.value, Janken.PA.name))
         if input_size is None:
             input_size = (64, 64)
         if transform is None:
@@ -52,9 +52,9 @@ class JankenDataset(Dataset[tuple[torch.Tensor, Janken]]):
     def __len__(self) -> int:
         return len(self._data)
 
-    def __getitem__(self, index: int) -> tuple[torch.Tensor, Janken]:
+    def __getitem__(self, index: int) -> tuple[torch.Tensor, int]:
         assert 0 <= index < len(self)
-        image_path, label = self._data[index]
+        image_path, label, _ = self._data[index]
 
         image = Image.open(image_path)
         image = self._transform(image)
