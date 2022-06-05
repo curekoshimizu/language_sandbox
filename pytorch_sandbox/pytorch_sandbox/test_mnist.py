@@ -4,7 +4,8 @@ import torch
 from torch import Tensor, nn, optim
 from torch.utils.data import DataLoader
 from torchvision import datasets, transforms
-from tqdm import tqdm
+
+from .utils import test, train
 
 
 class Net(nn.Module):
@@ -54,67 +55,37 @@ def test_mnist() -> None:
     history = []
 
     for epoch in range(num_epochs):
-        # train
-        train_acc = torch.tensor(0.0).to(device)
-        train_loss = 0.0
-        n_train = 0
-        for inputs, labels in tqdm(train_loader):
-            assert inputs.shape == (500, 784)
-            assert labels.shape == (500,)
+        train_loss, train_acc = train(
+            net,
+            device,
+            train_loader,
+            optimizer,
+            criterion,
+        )
 
-            n_train += len(labels)
+        test_loss, test_acc = test(
+            net,
+            device,
+            test_loader,
+            criterion,
+        )
 
-            inputs = inputs.to(device)
-            labels = labels.to(device)
+        train_loss = train_loss * batch_size
+        test_loss = test_loss * batch_size
+        print(
+            f"Epoch [{epoch+1}/{num_epochs}], loss: {train_loss:.5f} acc: {train_acc:.5f} test_loss: {test_loss:.5f}, test_acc: {test_acc:.5f}"
+        )
+        history.append(([epoch + 1, train_loss, train_acc, test_loss, test_acc]))
 
-            optimizer.zero_grad()
-            outputs = net(inputs)
-            loss = criterion(outputs, labels)
-            loss.backward()
-            optimizer.step()
+    history_array = np.array(history)
 
-            with torch.no_grad():  # type:ignore
-                _, pred = torch.max(outputs, 1)
-                train_loss += loss.item()
-                train_acc += (pred == labels).sum()
+    figure = plt.figure()
+    figure1 = figure.add_subplot(2, 1, 1)
+    figure1.plot(history_array[:, 0], history_array[:, 1], label="train")
+    figure1.plot(history_array[:, 0], history_array[:, 3], label="test")
 
-        with torch.no_grad():  # type:ignore
-            # test
-            test_acc = torch.tensor(0.0).to(device)
-            test_loss = 0.0
-            n_test = 0
-            for inputs, labels in test_loader:
-                n_test += len(labels)
+    figure2 = figure.add_subplot(2, 1, 2)
+    figure2.plot(history_array[:, 0], history_array[:, 2], label="train")
+    figure2.plot(history_array[:, 0], history_array[:, 4], label="test")
 
-                inputs = inputs.to(device)
-                labels = labels.to(device)
-
-                optimizer.zero_grad()
-                outputs = net(inputs)
-                loss = criterion(outputs, labels)
-
-                _, pred = torch.max(outputs, 1)
-                test_loss += loss.item()
-                test_acc += (pred == labels).sum()
-
-            train_acc = train_acc / n_train
-            test_acc = test_acc / n_test
-            train_loss = train_loss * batch_size / n_train
-            test_loss = test_loss * batch_size / n_test
-            print(
-                f"Epoch [{epoch+1}/{num_epochs}], loss: {train_loss:.5f} acc: {train_acc:.5f} test_loss: {test_loss:.5f}, test_acc: {test_acc:.5f}"
-            )
-            history.append(([epoch + 1, train_loss, train_acc.item(), test_loss, test_acc.item()]))
-
-        history_array = np.array(history)
-
-        figure = plt.figure()
-        figure1 = figure.add_subplot(2, 1, 1)
-        figure1.plot(history_array[:, 0], history_array[:, 1], label="train")
-        figure1.plot(history_array[:, 0], history_array[:, 3], label="test")
-
-        figure2 = figure.add_subplot(2, 1, 2)
-        figure2.plot(history_array[:, 0], history_array[:, 2], label="train")
-        figure2.plot(history_array[:, 0], history_array[:, 4], label="test")
-
-        figure.savefig("mnist.png")
+    figure.savefig("mnist.png")

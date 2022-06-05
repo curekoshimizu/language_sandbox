@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import torch
 import torch.nn.functional as F
-from torch import optim
+from torch import nn, optim
 from torch.utils.data import DataLoader, random_split
 from torch.utils.data.dataset import Subset
 
@@ -85,13 +85,15 @@ def test_model(seed: int = 100) -> None:
 
         return val_loss, val_acc
 
+    criterion = nn.CrossEntropyLoss()
+
     train_loss_list = []
 
     val_loss_list = []
     val_acc_list = []
 
     for epoch in range(1, EPOCHS + 1):
-        train_loss = train(model, device, train_dataloader, optimizer)
+        train_loss, train_acc = train(model, device, train_dataloader, optimizer, criterion)
         val_loss, val_acc = test(model, device, test_dataloader)
 
         train_loss_list.append(train_loss)
