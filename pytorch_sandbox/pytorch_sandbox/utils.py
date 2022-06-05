@@ -1,11 +1,88 @@
-from typing import TypeVar
+from typing import Optional, TypeVar
 
+import matplotlib.pyplot as plt
 import torch
 from torch import nn, optim
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
 T = TypeVar("T")
+
+
+class FitContext:
+    def __init__(self) -> None:
+        self._len = 0
+        self._train_loss: list[float] = []
+        self._train_acc: list[float] = []
+        self._test_loss: list[float] = []
+        self._test_acc: list[float] = []
+
+    def append(
+        self,
+        train_loss: float,
+        train_acc: float,
+        test_loss: float,
+        test_acc: float,
+    ) -> None:
+        self._len += 1
+        self._train_loss.append(train_loss)
+        self._train_acc.append(train_acc)
+        self._test_loss.append(test_loss)
+        self._test_acc.append(test_acc)
+
+    def __len__(self) -> int:
+        return self._len
+
+    def graph(self) -> plt.figure:
+        figure = plt.figure()
+        figure1 = figure.add_subplot(2, 1, 1)
+        figure1.plot(range(1, len(self) + 1), self._train_loss, label="train")
+        figure1.plot(range(1, len(self) + 1), self._test_loss, label="test")
+
+        figure2 = figure.add_subplot(2, 1, 2)
+        figure2.plot(range(1, len(self) + 1), self._train_acc, label="train")
+        figure2.plot(range(1, len(self) + 1), self._test_acc, label="test")
+
+        return figure
+
+
+class Classification:
+    def __init__(
+        self,
+        model: nn.Module,
+        device: torch.device,
+        train_dataloader: DataLoader[T],
+        test_dataloader: DataLoader[T],
+        optimizer: optim.Optimizer,
+        criterion: Optional[nn.Module] = None,
+    ) -> None:
+        self._model = model
+        self._device = device
+        self._train_dataloader = train_dataloader
+        self._test_dataloader = test_dataloader
+        self._optimizer = optimizer
+        if criterion is None:
+            criterion = nn.CrossEntropyLoss()
+        self._criterion = criterion
+
+    def _train(self) -> tuple[float, float]:
+        return train(self._model, self._device, self._train_dataloader, self._optimizer, self._criterion)
+
+    def _test(self) -> tuple[float, float]:
+        return validate(self._model, self._device, self._test_dataloader, self._criterion)
+
+    def fit(self, num_epochs: int, verbose: bool = True) -> FitContext:
+        context = FitContext()
+        for epoch in range(num_epochs):
+            train_loss, train_acc = self._train()
+            test_loss, test_acc = self._test()
+
+            if verbose:
+                print(
+                    f"Epoch [{epoch+1}/{num_epochs}], loss: {train_loss:.5f} acc: {train_acc:.5f} test_loss: {test_loss:.5f}, test_acc: {test_acc:.5f}"
+                )
+            context.append(train_loss, train_acc, test_loss, test_acc)
+        return context
 
 
 def train(
@@ -45,7 +122,7 @@ def train(
     return train_loss, train_acc.item()
 
 
-def test(
+def validate(
     model: nn.Module,
     device: torch.device,
     test_dataloader: DataLoader[T],

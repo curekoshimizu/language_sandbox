@@ -1,11 +1,9 @@
-import matplotlib.pyplot as plt
-import numpy as np
 import torch
 from torch import Tensor, nn, optim
 from torch.utils.data import DataLoader
 from torchvision import datasets, transforms
 
-from .utils import test, train
+from .utils import Classification
 
 
 class Net(nn.Module):
@@ -48,42 +46,15 @@ def test_mnist() -> None:
     test_loader = DataLoader(test_set, batch_size=batch_size, shuffle=False)
 
     net = Net().to(device)
-    criterion = nn.CrossEntropyLoss()
     optimizer = optim.SGD(net.parameters(), lr=0.01)
 
-    num_epochs = 100
-    history = []
-
-    for epoch in range(num_epochs):
-        train_loss, train_acc = train(
-            net,
-            device,
-            train_loader,
-            optimizer,
-            criterion,
-        )
-
-        test_loss, test_acc = test(
-            net,
-            device,
-            test_loader,
-            criterion,
-        )
-
-        print(
-            f"Epoch [{epoch+1}/{num_epochs}], loss: {train_loss:.5f} acc: {train_acc:.5f} test_loss: {test_loss:.5f}, test_acc: {test_acc:.5f}"
-        )
-        history.append(([epoch + 1, train_loss, train_acc, test_loss, test_acc]))
-
-    history_array = np.array(history)
-
-    figure = plt.figure()
-    figure1 = figure.add_subplot(2, 1, 1)
-    figure1.plot(history_array[:, 0], history_array[:, 1], label="train")
-    figure1.plot(history_array[:, 0], history_array[:, 3], label="test")
-
-    figure2 = figure.add_subplot(2, 1, 2)
-    figure2.plot(history_array[:, 0], history_array[:, 2], label="train")
-    figure2.plot(history_array[:, 0], history_array[:, 4], label="test")
-
+    classification = Classification(
+        net,
+        device,
+        train_loader,
+        test_loader,
+        optimizer,
+    )
+    context = classification.fit(num_epochs=100)
+    figure = context.graph()
     figure.savefig("mnist.png")
