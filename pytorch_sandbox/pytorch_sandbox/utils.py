@@ -38,10 +38,12 @@ class FitContext:
         figure1 = figure.add_subplot(2, 1, 1)
         figure1.plot(range(1, len(self) + 1), self._train_loss, label="train")
         figure1.plot(range(1, len(self) + 1), self._test_loss, label="test")
+        figure1.legend(loc="lower left")
 
         figure2 = figure.add_subplot(2, 1, 2)
         figure2.plot(range(1, len(self) + 1), self._train_acc, label="train")
         figure2.plot(range(1, len(self) + 1), self._test_acc, label="test")
+        figure2.legend(loc="upper left")
 
         return figure
 
