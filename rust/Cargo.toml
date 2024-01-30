@@ -14,5 +14,6 @@ members = [
     "grpc",
     "raytracing",
     "collections",
-    "random",
+    "random", "axum_project",
 ]
+resolver = "2"
