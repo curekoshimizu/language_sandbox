@@ -1,0 +1,31 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "type": "cargo",
+      "command": "clippy",
+      "problemMatcher": ["$rustc"],
+      "group": "build",
+      "label": "rust: cargo clippy"
+    },
+    {
+      "type": "cargo",
+      "command": "check",
+      "problemMatcher": ["$rustc"],
+      "group": "build",
+      "label": "rust: cargo check",
+      "dependsOn": ["rust: cargo clippy"]
+    },
+    {
+      "type": "shell",
+      "command": "echo",
+      "args": ["Successfully Finished!✅"],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "label": "clippy-succeeded",
+      "dependsOn": ["rust: cargo clippy", "rust: cargo check"]
+    }
+  ]
+}
