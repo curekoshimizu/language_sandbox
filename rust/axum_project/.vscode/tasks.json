@@ -4,6 +4,7 @@
     {
       "type": "cargo",
       "command": "clippy",
+      "args": ["--", "-D", "warnings", "-W", "clippy::pedantic"],
       "problemMatcher": ["$rustc"],
       "group": "build",
       "presentation": {
