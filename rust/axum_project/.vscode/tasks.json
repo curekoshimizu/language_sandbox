@@ -6,6 +6,9 @@
       "command": "clippy",
       "problemMatcher": ["$rustc"],
       "group": "build",
+      "presentation": {
+        "clear": true
+      },
       "label": "rust: cargo clippy"
     },
     {
@@ -14,15 +17,22 @@
       "problemMatcher": ["$rustc"],
       "group": "build",
       "label": "rust: cargo check",
+      "presentation": {
+        "clear": true
+      },
       "dependsOn": ["rust: cargo clippy"]
     },
     {
       "type": "shell",
       "command": "echo",
-      "args": ["Successfully Finished!✅"],
+      "args": ["✅✅✅ Successfully Build Checked!!! ✅✅✅"],
       "group": {
         "kind": "build",
         "isDefault": true
+      },
+      "presentation": {
+        "echo": false,
+        "clear": true
       },
       "label": "clippy-succeeded",
       "dependsOn": ["rust: cargo clippy", "rust: cargo check"]

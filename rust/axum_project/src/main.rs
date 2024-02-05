@@ -13,7 +13,7 @@ struct RangeParameters {
 }
 
 #[derive(OpenApi)]
-#[openapi(paths(handler,), components(schemas(RangeParameters)))]
+#[openapi(paths(handler), components(schemas(RangeParameters)))]
 struct ApiDoc;
 
 #[tokio::main]
@@ -23,8 +23,10 @@ async fn main() {
 
     let app = Router::new()
         .route("/users", routing::get(handler))
-        .route("/", routing::get(root))
-        .merge(SwaggerUi::new("/swagger-ui").url("/api-doc/openapi.json", ApiDoc::openapi()));
+        .route("/", routing::get(root));
+
+    let app =
+        app.merge(SwaggerUi::new("/swagger-ui").url("/api-doc/openapi.json", ApiDoc::openapi()));
 
     let listener = TcpListener::bind("0.0.0.0:3000").await.unwrap();
     axum::serve(listener, app).await.unwrap();
